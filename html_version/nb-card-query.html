@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N/B 카드 조회</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #161c2b;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e6eefc;
+      --muted: #9aa0a6;
+      --accent: #0ecb81;
+      --accent-2: #4285f4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    h1 { margin: 0 0 16px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+    input {
+      background: #111827;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      min-width: 140px;
+    }
+    button {
+      background: var(--accent);
+      color: #0b1220;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 13px;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    .muted { color: var(--muted); }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .badge-state { background: rgba(66, 133, 244, 0.1); color: var(--accent-2); border: 1px solid rgba(66,133,244,0.2); }
+    .badge-type { background: rgba(14, 203, 129, 0.1); color: var(--accent); border: 1px solid rgba(14,203,129,0.2); }
+    .small { font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+    .stat { background: #111827; border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+    .stat-label { color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    .stat-value { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>N/B 카드 조회</h1>
+  <div class="panel">
+    <div class="form-row">
+      <div>
+        <label for="minNb">N/B Min</label>
+        <input type="number" step="0.0000000001" id="minNb" placeholder="예: 0.01" />
+      </div>
+      <div>
+        <label for="maxNb">N/B Max</label>
+        <input type="number" step="0.0000000001" id="maxNb" placeholder="예: 0.12" />
+      </div>
+      <div>
+        <label for="timeframe">분봉 (선택)</label>
+        <input type="text" id="timeframe" placeholder="예: 30m / 60m" />
+      </div>
+      <div>
+        <button id="searchBtn">조회</button>
+      </div>
+    </div>
+    <div id="status" class="muted" style="margin-top: 8px;">데이터 로드 전...</div>
+    <div style="margin-top: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <span class="muted small">경로 문제로 로드되지 않으면 JSON 파일을 직접 불러오세요.</span>
+      <button id="fileBtn" type="button" style="background: #222b3d; color: #e6eefc; border: 1px solid var(--border);">JSON 파일 선택</button>
+      <input type="file" id="fileInput" accept="application/json" style="display: none;" />
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="grid" id="summary"></div>
+    <table id="resultTable">
+      <thead>
+        <tr>
+          <th>card_id</th>
+          <th>분봉</th>
+          <th>N/B</th>
+          <th>N/B Max</th>
+          <th>N/B Min</th>
+          <th>생산 시각</th>
+          <th>상태</th>
+          <th>타입</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const DATA_PATHS = [
+      '../data/production_cards_cache.json',
+      './data/production_cards_cache.json',
+      'data/production_cards_cache.json'
+    ];
+    let cards = [];
+
+    function formatNumber(num, digits = 10) {
+      return typeof num === 'number' ? num.toFixed(digits) : '-';
+    }
+
+    function renderSummary(filtered) {
+      const total = cards.length;
+      const matched = filtered.length;
+      const avgNb = matched ? (filtered.reduce((s, c) => s + (c.nb_value || 0), 0) / matched) : 0;
+      const summaryEl = document.getElementById('summary');
+      summaryEl.innerHTML = `
+        <div class="stat">
+          <div class="stat-label">전체 카드</div>
+          <div class="stat-value">${total.toLocaleString()} 개</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">조회 결과</div>
+          <div class="stat-value">${matched.toLocaleString()} 개</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">평균 N/B (결과)</div>
+          <div class="stat-value">${matched ? avgNb.toFixed(10) : '-'}</div>
+        </div>
+      `;
+    }
+
+    function loadFromFile(file) {
+      const status = document.getElementById('status');
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const json = JSON.parse(reader.result);
+          cards = json.cards || [];
+          renderSummary(cards);
+          renderTable(cards);
+          status.textContent = `파일 로드 완료: ${cards.length}개 카드`;
+        } catch (err) {
+          status.textContent = '파일 파싱 오류: ' + err.message;
+        }
+      };
+      reader.onerror = () => {
+        status.textContent = '파일 읽기 오류';
+      };
+      reader.readAsText(file);
+    }
+
+    function renderTable(filtered) {
+      const tbody = document.querySelector('#resultTable tbody');
+      tbody.innerHTML = '';
+      filtered.forEach(card => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${card.card_id}</td>
+          <td>${card.timeframe}</td>
+          <td>${formatNumber(card.nb_value)}</td>
+          <td>${formatNumber(card.nb_max)}</td>
+          <td>${formatNumber(card.nb_min)}</td>
+          <td>${card.production_time ? new Date(card.production_time).toLocaleString('ko-KR') : '-'}</td>
+          <td><span class="badge badge-state">${card.status || card.card_state || '-'}</span></td>
+          <td><span class="badge badge-type">${card.card_type || '-'}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadData() {
+      const status = document.getElementById('status');
+      status.textContent = '불러오는 중...';
+      let lastError = null;
+      for (const path of DATA_PATHS) {
+        try {
+          const res = await fetch(path);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const json = await res.json();
+          cards = json.cards || [];
+          status.textContent = `총 ${cards.length}개 카드 로드 완료 (${path})`;
+          return;
+        } catch (err) {
+          lastError = err;
+          continue;
+        }
+      }
+      status.textContent = '로드 오류: ' + (lastError ? lastError.message : '파일을 찾을 수 없습니다');
+      status.textContent += ' — JSON 파일 직접 불러오기를 사용하세요.';
+    }
+
+    function handleSearch() {
+      const min = parseFloat(document.getElementById('minNb').value);
+      const max = parseFloat(document.getElementById('maxNb').value);
+      const tf = document.getElementById('timeframe').value.trim();
+      
+      // min과 max 중 최소 하나는 입력되어야 함
+      if (!Number.isFinite(min) && !Number.isFinite(max)) {
+        document.getElementById('status').textContent = '⚠️ N/B Min 또는 Max 중 최소 하나는 입력해주세요.';
+        return;
+      }
+      
+      const filtered = cards.filter(card => {
+        const nb = card.nb_value;
+        
+        // 입력된 필터에 대해서만 검사
+        if (Number.isFinite(min) && nb < min) return false;
+        if (Number.isFinite(max) && nb > max) return false;
+        
+        // 분봉 필터 (선택사항)
+        if (tf) {
+          const lc = tf.toLowerCase();
+          const cardTf = (card.timeframe || '').toLowerCase();
+          if (!cardTf.includes(lc)) return false;
+        }
+        return true;
+      });
+      renderSummary(filtered);
+      renderTable(filtered);
+      document.getElementById('status').textContent = `조회 완료: ${filtered.length}개`;
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', handleSearch);
+    document.getElementById('fileBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+    document.getElementById('fileInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) loadFromFile(file);
+    });
+    loadData().then(() => { renderSummary(cards); renderTable(cards); });
+  </script>
+</body>
+</html>

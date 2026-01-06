@@ -1,0 +1,9 @@
+# 성능 최적화 라이브러리
+# 설치: pip install -r requirements_performance.txt
+
+# 빠른 JSON 처리 (표준 json보다 2-3배 빠름)
+orjson>=3.9.0
+
+# 대안: ujson (orjson이 설치되지 않을 경우)
+# ujson>=5.8.0
+

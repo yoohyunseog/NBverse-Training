@@ -1,0 +1,209 @@
+  <div class="container tab-container" id="tab">
+    <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="general-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#general"
+          type="button"
+          role="tab"
+          aria-controls="general"
+          aria-selected="true"
+        >
+          General
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="advanced-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#advanced"
+          type="button"
+          role="tab"
+          aria-controls="advanced"
+          aria-selected="false"
+        >
+          Advanced
+        </button>
+      </li>
+    </ul>
+    <div class="tab-content mt-3" id="settingsTabsContent">
+      <!-- General Tab -->
+      <div
+        class="tab-pane fade show active"
+        id="general"
+        role="tabpanel"
+        aria-labelledby="general-tab"
+      >
+        <h5>Logs</h5>
+        <div id="logs">No logs available.</div>
+      </div>
+      <!-- Advanced Tab -->
+      <div
+        class="tab-pane fade"
+        id="advanced"
+        role="tabpanel"
+        aria-labelledby="advanced-tab"
+           >
+        <h5>비트 설정(Bit Settings)</h5> <!-- 설정 섹션 제목 -->
+        <form id="generalSettingsForm">
+          <!-- 유사도 임계값 설정 -->
+          <div class="mb-3">
+            <label for="SIMILARITY_THRESHOLD" class="form-label">유사도 임계값 (SIMILARITY_THRESHOLD)</label>
+            <input type="number" class="form-control" id="SIMILARITY_THRESHOLD" value="1">
+          </div>
+
+          <!-- 최대 N/B 비트 설정 -->
+          <div class="mb-3">
+            <label for="bit_max_nb" class="form-label">최대 N/B 비트 (Bit Max NB)</label>
+            <input type="number" class="form-control" id="bit_max_nb" value="1.955519351483861">
+          </div>
+
+          <!-- 최소 N/B 비트 설정 -->
+          <div class="mb-3">
+            <label for="bit_min_nb" class="form-label">최소 N/B 비트 (Bit Min NB)</label>
+            <input type="number" class="form-control" id="bit_min_nb" value="2.0013734539241543">
+          </div>
+
+          <!-- 최대 유사도 -->
+          <div class="mb-3">
+            <label for="similarity_max" class="form-label">최대 유사도 (Similarity Max)</label>
+            <input type="text" class="form-control" id="similarity_max" value="96.45">
+          </div>
+
+          <!-- 최소 유사도 -->
+          <div class="mb-3">
+            <label for="similarity_min" class="form-label">최소 유사도 (Similarity Min)</label>
+            <input type="text" class="form-control" id="similarity_min" value="97.18">
+          </div>
+
+          <!-- 평균 유사도 -->
+          <div class="mb-3">
+            <label for="bit_average_similarity" class="form-label">평균 유사도 (bit_average_similarity)</label>
+            <input type="text" class="form-control" id="bit_average_similarity" value="96.82">
+          </div>
+
+          <!-- 안정성 상태 -->
+          <div class="mb-3">
+            <label for="Stability" class="form-labesafeThresHoldl">안정성 상태 (Stability)</label>
+            <input type="text" class="form-control" id="Stability" value="Unstable">
+          </div>
+
+          <!-- 접근 단계 -->
+          <div class="mb-3">
+            <label for="approachStage" class="form-label">접근 단계 (Approach Stage)</label>
+            <input type="text" class="form-control" id="approachStage" value="매우 낮은 접근 단계 (Very Low Approach)">
+          </div>
+
+          <!-- 접근 확률 -->
+          <div class="mb-3">
+            <label for="approachProbability" class="form-label">접근 확률 (Approach Probability)</label>
+            <input type="text" class="form-control" id="approachProbability" value="0.00">
+          </div>
+
+          <!-- 현재 거리 -->
+          <div class="mb-3">
+            <label for="currentDistance" class="form-label">현재 거리 (Current Distance)</label>
+            <input type="text" class="form-control" id="currentDistance" value="1195.48">
+          </div>
+
+          <!-- 거리 백분율 -->
+          <div class="mb-3">
+            <label for="distancePercentage" class="form-label">거리 백분율 (Distance Percentage)</label>
+            <input type="text" class="form-control" id="distancePercentage" value="31.04545">
+          </div>
+
+          <!-- 안전 거리 -->
+          <div class="mb-3">
+            <label for="safeDistance" class="form-label">안전 거리 (Safe Distance)</label>
+            <input type="number" class="form-control" id="safeDistance" value="250">
+          </div>
+
+          <!-- 최대 안전 거리 -->
+          <div class="mb-3">
+            <label for="safeMaxDistance" class="form-label">최대 안전 거리 (Safe Max Distance)</label>
+            <input type="number" class="form-control" id="safeMaxDistance" value="250">
+          </div>
+
+          <!-- 최소 안전 거리 -->
+          <div class="mb-3">
+            <label for="safeMinDistance" class="form-label">최소 안전 거리 (Safe Min Distance)</label>
+            <input type="number" class="form-control" id="safeMinDistance" value="250">
+          </div>
+
+          <!-- 안전 거리 임계값 -->
+          <div class="mb-3">
+            <label for="safeThresHold" class="form-label">안전 거리 임계값 (Safe Thres Distance)</label>
+            <input type="number" class="form-control" id="safeThresHold" value="250">
+          </div>
+
+          <!-- 안정적 상태 확률 -->
+          <div class="mb-3">
+            <label for="stableProbability" class="form-label">안정적 상태 확률 (Stable Probability)</label>
+            <input type="text" class="form-control" id="stableProbability" value="25.07">
+          </div>
+
+          <!-- 불안정 상태 확률 -->
+          <div class="mb-3">
+            <label for="unstableProbability" class="form-label">불안정 상태 확률 (Unstable Probability)</label>
+            <input type="text" class="form-control" id="unstableProbability" value="74.93">
+          </div>
+
+          <!-- 접근 횟수 -->
+          <div class="mb-3">
+            <label for="approachCount" class="form-label">접근 횟수 (Approach Count)</label>
+            <input type="number" class="form-control" id="approachCount" value="0">
+          </div>
+
+          <!-- 총 거리 체크 횟수 -->
+          <div class="mb-3">
+            <label for="totalDistanceChecks" class="form-label">총 거리 체크 횟수 (Total Distance Checks)</label>
+            <input type="number" class="form-control" id="totalDistanceChecks" value="2">
+          </div>
+
+          <!-- 기존 필드들 유지 -->
+          ...
+          <!-- 감도 관련 설정 추가 -->
+          <!-- 기본 감도 -->
+          <div class="mb-3">
+            <label for="sensitivity" class="form-label">기본 감도 (Sensitivity)</label>
+            <input type="number" class="form-control" id="sensitivity" value="1.0" step="0.1" min="0.0" max="2.0">
+          </div>
+          
+          <div class="mb-3">
+            <label for="sensitivity" class="form-label">감도의 최대값</label>
+            <input type="number" class="form-control" id="SENSITIVITY_MAX" value="1.0" step="0.1" min="0.0" max="2.0">
+          </div>
+          
+          <div class="mb-3">
+            <label for="sensitivity" class="form-label">감도의 최소값</label>
+            <input type="number" class="form-control" id="SENSITIVITY_MIN" sensitivity_min="1.0" step="0.1" min="0.0" max="2.0">
+          </div>
+
+          <!-- 감도 단계 -->
+          <div class="mb-3">
+            <label for="sensitivityLevel" class="form-label">감도 단계 (Sensitivity Level)</label>
+            <select class="form-control" id="sensitivityLevel">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+
+          <!-- 감도 조정량 -->
+          <div class="mb-3">
+            <label for="sensitivityAdjustment" class="form-label">감도 조정량 (Sensitivity Adjustment)</label>
+            <input type="number" class="form-control" id="sensitivityAdjustment" value="0.1" step="0.01" min="0.01" max="1.0">
+          </div>
+          
+          <!-- 설정 저장 버튼 -->
+          <button type="button" class="btn btn-primary" id="saveGeneralSettings">
+            설정 저장 (Save Settings)
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>

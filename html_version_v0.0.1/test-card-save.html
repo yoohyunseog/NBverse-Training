@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>카드 저장/조회 테스트</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #161c2b;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #e6eefc;
+      --muted: #9aa0a6;
+      --accent: #0ecb81;
+      --accent-2: #4285f4;
+      --danger: #f44336;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+    h1 { margin: 0 0 24px; font-size: 32px; }
+    h2 { margin: 24px 0 12px; font-size: 18px; color: var(--accent); }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+    input {
+      background: #111827;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      min-width: 120px;
+    }
+    button {
+      background: var(--accent);
+      color: #0b1220;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .status {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 14px;
+      background: rgba(66, 133, 244, 0.1);
+      border-left: 4px solid var(--accent-2);
+      color: var(--accent-2);
+    }
+    .status.success {
+      background: rgba(14, 203, 129, 0.1);
+      border-left-color: var(--accent);
+      color: var(--accent);
+    }
+    .status.error {
+      background: rgba(244, 67, 54, 0.1);
+      border-left-color: var(--danger);
+      color: var(--danger);
+    }
+    .status.warning {
+      background: rgba(255, 152, 0, 0.1);
+      border-left-color: #ff9800;
+      color: #ff9800;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 13px;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .code {
+      background: #111827;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px;
+      margin: 8px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .stat {
+      background: #111827;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .stat-label { color: var(--muted); font-size: 11px; margin-bottom: 6px; }
+    .stat-value { font-weight: 700; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h1>🧪 카드 저장/조회 테스트</h1>
+
+  <!-- 카드 저장 섹션 -->
+  <div class="panel">
+    <h2>1️⃣ 카드 저장하기</h2>
+    
+    <div class="form-row">
+      <div>
+        <label for="price">가격 (KRW)</label>
+        <input type="number" id="price" placeholder="50000" value="50000" />
+      </div>
+      <div>
+        <label for="nbValue">N/B 값</label>
+        <input type="number" step="0.0000000001" id="nbValue" placeholder="0.1597275731" value="0.1597275731" />
+      </div>
+      <div>
+        <label for="nbMax">N/B Max</label>
+        <input type="number" step="0.0000000001" id="nbMax" placeholder="0.2379831565" value="0.2379831565" />
+      </div>
+      <div>
+        <label for="nbMin">N/B Min</label>
+        <input type="number" step="0.0000000001" id="nbMin" placeholder="0.0814719896" value="0.0814719896" />
+      </div>
+      <button id="saveBtn" onclick="saveCard()">💾 카드 저장</button>
+    </div>
+    
+    <div id="saveStatus"></div>
+    <div id="saveResult"></div>
+  </div>
+
+  <!-- 조회 섹션 -->
+  <div class="panel">
+    <h2>2️⃣ 저장된 카드 조회하기</h2>
+    
+    <div class="form-row">
+      <div>
+        <label for="queryMin">N/B Min 조회 (저장된 Min과 비교)</label>
+        <input type="number" step="0.0000000001" id="queryMin" placeholder="0.0814719896" value="" />
+      </div>
+      <div>
+        <label for="queryMax">N/B Max 조회 (저장된 Max와 비교)</label>
+        <input type="number" step="0.0000000001" id="queryMax" placeholder="0.2379831565" value="" />
+      </div>
+      <button id="queryBtn" onclick="queryCards()">🔍 조회</button>
+    </div>
+    
+    <div id="queryStatus"></div>
+    <div id="queryResult"></div>
+  </div>
+
+  <!-- 폴더 경로 설명 -->
+  <div class="panel">
+    <h2>📁 저장 경로 구조</h2>
+    <p style="color: var(--muted); margin-top: 0;">
+      N/B 값 <code style="background: #111827; padding: 2px 6px; border-radius: 4px;">0.2604972083</code> 일 때:
+    </p>
+    <div class="code">data/nbverse/max/0/2/6/0/4/9/7/2/0/8/3/0.2604972083_20260103_123456_123456.json</div>
+    <p style="color: var(--muted); margin-bottom: 0;">
+      소수점 이후 각 자릿수가 폴더가 되어 저장됩니다.
+    </p>
+  </div>
+
+  <!-- 상세 정보 -->
+  <div class="panel">
+    <h2>📋 저장된 카드 상세</h2>
+    <div id="cardDetails">
+      <p style="color: var(--muted);">저장된 카드 정보가 여기에 표시됩니다.</p>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'http://127.0.0.1:5000/api';
+    let lastSavedCard = null;
+
+    const formatNb = (value) => Number.isFinite(value) ? value.toFixed(10) : '-';
+
+    function showStatus(elementId, message, type = 'info') {
+      const el = document.getElementById(elementId);
+      el.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+
+    function formatJson(obj) {
+      return JSON.stringify(obj, null, 2);
+    }
+
+    async function saveCard() {
+      const price = parseFloat(document.getElementById('price').value);
+      const nbValue = parseFloat(document.getElementById('nbValue').value);
+      const nbMax = parseFloat(document.getElementById('nbMax').value);
+      const nbMin = parseFloat(document.getElementById('nbMin').value);
+
+      if (!price || !nbValue || !nbMax || !nbMin) {
+        showStatus('saveStatus', '⚠️ 모든 필드를 입력해주세요.', 'warning');
+        return;
+      }
+
+      showStatus('saveStatus', '💫 카드를 저장하는 중...', 'info');
+      document.getElementById('saveBtn').disabled = true;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/cards/chart-analysis/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            card_type: 'card2',
+            timeframe: 'minute10',
+            card_data: {
+              price: price,
+              nb_value: nbValue,
+              nb_max: nbMax,
+              nb_min: nbMin,
+              timestamp: new Date().toISOString(),
+              ema_fast: 50000,
+              ema_slow: 48000,
+              production_date: new Date().toISOString()
+            }
+          })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          lastSavedCard = {
+            ...result,
+            card_data: {
+              price: price,
+              nb_value: nbValue,
+              nb_max: nbMax,
+              nb_min: nbMin,
+              timestamp: new Date().toISOString()
+            }
+          };
+          showStatus('saveStatus', `✅ 카드 저장 완료! card_id: ${result.card_id}`, 'success');
+          
+          const html = `
+            <div class="grid">
+              <div class="stat">
+                <div class="stat-label">카드 ID</div>
+                <div class="stat-value" style="font-size: 12px; overflow: hidden; text-overflow: ellipsis;">${result.card_id}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">카드 키</div>
+                <div class="stat-value" style="font-size: 12px; overflow: hidden; text-overflow: ellipsis;">${result.card_key}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">중첩 여부</div>
+                <div class="stat-value">${result.is_overlap ? '🔄 중첩' : '✨ 새 카드'}</div>
+              </div>
+            </div>
+            <p><strong>MAX 경로:</strong></p>
+            <div class="code">${result.max_path || 'N/A'}</div>
+            <p><strong>MIN 경로:</strong></p>
+            <div class="code">${result.min_path || 'N/A'}</div>
+            <p><strong>전체 응답:</strong></p>
+            <div class="code">${formatJson(result)}</div>
+          `;
+          document.getElementById('saveResult').innerHTML = html;
+
+          // 카드 상세 표시
+          document.getElementById('cardDetails').innerHTML = `
+            <div class="grid">
+              <div class="stat">
+                <div class="stat-label">가격</div>
+                <div class="stat-value">${price.toLocaleString()} 원</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">N/B 값</div>
+                <div class="stat-value">${nbValue.toFixed(10)}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">N/B Max</div>
+                <div class="stat-value">${nbMax.toFixed(10)}</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">N/B Min</div>
+                <div class="stat-value">${nbMin.toFixed(10)}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          showStatus('saveStatus', `❌ 저장 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+          document.getElementById('saveResult').innerHTML = `<div class="code">${formatJson(result)}</div>`;
+        }
+      } catch (error) {
+        showStatus('saveStatus', `❌ 오류: ${error.message}`, 'error');
+        document.getElementById('saveResult').innerHTML = `<div class="code">${error.message}</div>`;
+      } finally {
+        document.getElementById('saveBtn').disabled = false;
+      }
+    }
+
+    async function queryCards() {
+      const minVal = parseFloat(document.getElementById('queryMin').value);
+      const maxVal = parseFloat(document.getElementById('queryMax').value);
+
+      // min과 max 중 최소 하나는 입력되어야 함
+      if (!Number.isFinite(minVal) && !Number.isFinite(maxVal)) {
+        showStatus('queryStatus', '⚠️ N/B Min 또는 Max 중 최소 하나는 입력해주세요. (소수점 10자리까지 입력)', 'warning');
+        return;
+      }
+
+      showStatus('queryStatus', '🔍 카드를 조회하는 중...', 'info');
+      document.getElementById('queryBtn').disabled = true;
+
+      try {
+        const hasMin = Number.isFinite(minVal);
+        const hasMax = Number.isFinite(maxVal);
+
+        const payload = {
+          nb_min: hasMin ? minVal : undefined,
+          nb_max: hasMax ? maxVal : undefined,
+          limit: 20
+        };
+
+        const queryType = hasMin && hasMax
+          ? 'Min & Max 범위 조회'
+          : hasMin
+            ? 'Min 기준 조회'
+            : 'Max 기준 조회';
+
+        const rangeText = hasMin && hasMax
+          ? `저장된 Min ≥ ${minVal.toFixed(10)} AND 저장된 Max ≤ ${maxVal.toFixed(10)}`
+          : hasMin
+            ? `저장된 NB_Min ≥ ${minVal.toFixed(10)}`
+            : `저장된 NB_Max ≤ ${maxVal.toFixed(10)}`;
+
+        const response = await fetch(`${API_BASE_URL}/cards/chart-analysis/query`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        let result;
+        try {
+          result = await response.json();
+        } catch (e) {
+          const text = await response.text();
+          throw new Error(`응답 파싱 실패 (status ${response.status}): ${text}`);
+        }
+
+        if (!response.ok || result.error) {
+          throw new Error(result?.error || `HTTP ${response.status}`);
+        }
+
+        const cards = result.cards || [];
+
+        showStatus('queryStatus', `✅ 조회 완료! ${cards.length}개의 카드 발견 (스캔 ${result.scanned_files ?? '?'} / ${result.max_scan ?? '?'})`, 'success');
+
+        let resultsHtml = `
+          <h3 style="margin-top: 16px; color: var(--text);">조회 조건:</h3>
+          <table>
+            <tr>
+              <th>항목</th>
+              <th>값</th>
+            </tr>
+            <tr>
+              <td>조회 유형</td>
+              <td><strong>${queryType}</strong></td>
+            </tr>
+            <tr>
+              <td>조회 범위</td>
+              <td><strong>${rangeText}</strong></td>
+            </tr>
+            <tr>
+              <td>입력된 Min</td>
+              <td>${hasMin ? minVal.toFixed(10) : '(입력 안 함)'}</td>
+            </tr>
+            <tr>
+              <td>입력된 Max</td>
+              <td>${hasMax ? maxVal.toFixed(10) : '(입력 안 함)'}</td>
+            </tr>
+          </table>
+        `;
+
+        if (cards.length > 0) {
+          resultsHtml += `
+            <h3 style="margin-top: 16px; color: var(--accent);">🎯 조회 결과 (${cards.length}개)</h3>
+            <table>
+              <tr>
+                <th>카드 ID</th>
+                <th>Timeframe</th>
+                <th>NB_Min</th>
+                <th>NB_Max</th>
+              </tr>
+          `;
+          cards.forEach(card => {
+            const data = card.card_data || card;
+            const nbMin = data?.nb_min ?? data?.nbMin ?? card.nb_min ?? card.nbMin;
+            const nbMax = data?.nb_max ?? data?.nbMax ?? card.nb_max ?? card.nbMax;
+            resultsHtml += `
+              <tr>
+                <td style="font-size: 11px; word-break: break-all;">${card.card_id || card.id || '(없음)'}</td>
+                <td>${card.timeframe || data.productionTimeframe || '-'}</td>
+                <td>${formatNb(nbMin)}</td>
+                <td>${formatNb(nbMax)}</td>
+              </tr>
+            `;
+          });
+          resultsHtml += `</table>`;
+        } else {
+          resultsHtml += `
+            <h3 style="margin-top: 16px; color: var(--danger);">❌ 조회 결과</h3>
+            <div class="status error">
+              저장된 카드가 조회 조건과 일치하지 않습니다.
+            </div>
+          `;
+        }
+
+        document.getElementById('queryResult').innerHTML = resultsHtml;
+      } catch (error) {
+        showStatus('queryStatus', `❌ 오류: ${error.message}`, 'error');
+      } finally {
+        document.getElementById('queryBtn').disabled = false;
+      }
+    }
+
+    // 페이지 로드 시 정보 표시
+    window.addEventListener('load', () => {
+      document.getElementById('cardDetails').innerHTML = `
+        <p style="color: var(--muted);">위에서 카드를 저장한 후 저장된 정보가 여기에 표시됩니다.</p>
+      `;
+    });
+  </script>
+</body>
+</html>

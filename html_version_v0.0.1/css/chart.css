@@ -1,0 +1,125 @@
+/* 차트 스타일 */
+.chart-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.chart-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* 차트 그리드 */
+.chart-grid {
+    stroke: #333333;
+    stroke-width: 1;
+}
+
+.chart-grid-line {
+    stroke: #333333;
+    stroke-width: 0.5;
+    opacity: 0.5;
+}
+
+/* 차트 라인 */
+.chart-line {
+    stroke: #00d1ff;
+    stroke-width: 2;
+    fill: none;
+}
+
+.chart-line-up {
+    stroke: #0ecb81;
+}
+
+.chart-line-down {
+    stroke: #ff6b6b;
+}
+
+/* 차트 영역 채우기 */
+.chart-area {
+    fill: rgba(0, 209, 255, 0.1);
+}
+
+.chart-area-up {
+    fill: rgba(14, 203, 129, 0.1);
+}
+
+.chart-area-down {
+    fill: rgba(255, 107, 107, 0.1);
+}
+
+/* 차트 포인트 */
+.chart-point {
+    fill: #00d1ff;
+    stroke: #ffffff;
+    stroke-width: 1;
+}
+
+.chart-point-up {
+    fill: #0ecb81;
+}
+
+.chart-point-down {
+    fill: #ff6b6b;
+}
+
+/* 차트 툴팁 */
+.chart-tooltip {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+}
+
+.chart-tooltip.visible {
+    display: block;
+}
+
+/* 차트 범례 */
+.chart-legend {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    color: #ffffff;
+}
+
+.chart-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 2px 0;
+}
+
+.chart-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+/* 애니메이션 */
+@keyframes chart-animation {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-animated {
+    animation: chart-animation 0.3s ease-out;
+}
+

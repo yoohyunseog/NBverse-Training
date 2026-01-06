@@ -1,0 +1,1181 @@
+﻿   * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    /* 전역 스크롤바 디자인 (모든 스크롤 가능한 요소에 적용) */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #0ecb81 rgba(255, 255, 255, 0.05);
+    }
+    
+    *::-webkit-scrollbar {
+      width: 14px;
+      height: 14px;
+    }
+    
+    *::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    *::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #0ecb81 0%, #0db870 100%);
+      border-radius: 7px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      min-height: 50px;
+      min-width: 50px;
+    }
+    
+    *::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #0db870 0%, #0ca760 100%);
+      background-clip: padding-box;
+    }
+    
+    *::-webkit-scrollbar-thumb:active {
+      background: linear-gradient(180deg, #0ca760 0%, #0b9650 100%);
+      background-clip: padding-box;
+    }
+    
+    *::-webkit-scrollbar-corner {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    body {
+      background: #0b1220;
+      color: #e6eefc;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      height: 100vh;
+    }
+    
+    /* 진행 단계 추적 스타일 */
+    .progress-tracker-container {
+      background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .progress-stages {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .progress-stage {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    .progress-stage.current {
+      box-shadow: 0 0 12px rgba(14, 203, 129, 0.3);
+    }
+    
+    .stage-icon {
+      font-size: 20px;
+      line-height: 1;
+    }
+    
+    .stage-content {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .stage-text {
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    .stage-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .stage-status {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    
+    .stage-time {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    
+    .stage-arrow {
+      color: #9aa0a6;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    
+    .stage-pending {
+      border-color: rgba(154, 160, 166, 0.3);
+    }
+    
+    .stage-pending .stage-text,
+    .stage-pending .stage-status {
+      color: #9aa0a6;
+    }
+    
+    .stage-active {
+      background: rgba(14, 203, 129, 0.15);
+      border-color: rgba(14, 203, 129, 0.4);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .stage-active .stage-text {
+      color: #0ecb81;
+      font-weight: 700;
+    }
+    
+    .stage-active .stage-status {
+      color: #0ecb81;
+      animation: spin 1s linear infinite;
+    }
+    
+    .stage-completed {
+      background: rgba(14, 203, 129, 0.1);
+      border-color: rgba(14, 203, 129, 0.3);
+    }
+    
+    .stage-completed .stage-text,
+    .stage-completed .stage-status {
+      color: #0ecb81;
+    }
+    
+    .stage-error {
+      background: rgba(246, 70, 93, 0.1);
+      border-color: rgba(246, 70, 93, 0.3);
+    }
+    
+    .stage-error .stage-text,
+    .stage-error .stage-status {
+      color: #f6465d;
+    }
+    
+    .stage-skipped {
+      background: rgba(154, 160, 166, 0.05);
+      border-color: rgba(154, 160, 166, 0.2);
+      opacity: 0.6;
+    }
+    
+    .stage-skipped .stage-text,
+    .stage-skipped .stage-status {
+      color: #9aa0a6;
+    }
+    
+    .progress-message {
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid #0ecb81;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #9aa0a6;
+    }
+    
+    .progress-total-time {
+      margin-top: 12px;
+      padding: 8px 12px;
+      background: rgba(14, 203, 129, 0.1);
+      border: 1px solid rgba(14, 203, 129, 0.3);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0ecb81;
+      text-align: center;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 8px rgba(14, 203, 129, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 16px rgba(14, 203, 129, 0.6);
+      }
+    }
+    
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .container-fluid {
+      display: flex;
+      height: 100vh;
+      gap: 12px;
+      padding: 12px;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    /* container-fluid 커스텀 스크롤바 */
+    .container-fluid::-webkit-scrollbar {
+      width: 14px;
+    }
+    
+    .container-fluid::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .container-fluid::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #0ecb81 0%, #0db870 100%);
+      border-radius: 7px;
+      border: 2px solid #0b1220;
+      min-height: 50px;
+    }
+    
+    .container-fluid::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #0db870 0%, #0ca760 100%);
+    }
+    
+    .container-fluid::-webkit-scrollbar-thumb:active {
+      background: linear-gradient(180deg, #0ca760 0%, #0b9650 100%);
+    }
+    
+    /* Firefox 스크롤바 */
+    .container-fluid {
+      scrollbar-width: thin;
+      scrollbar-color: #0ecb81 rgba(255, 255, 255, 0.05);
+    }
+    
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: 12px;
+      min-height: 0;
+      overflow: hidden;
+    }
+    
+    /* 좌측 차트 영역 */
+    .chart-container {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: #1e2329;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 16px;
+      overflow: hidden;
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #e6eefc;
+    }
+    
+    .chart-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .chart-controls select,
+    .chart-controls button {
+      background: #2b3139;
+      color: #e6eefc;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .chart-controls select:hover,
+    .chart-controls button:hover {
+      background: #3a4149;
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+    
+    #tvChart {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+    
+    /* 우측 분석 영역 */
+    .analysis-container {
+      width: 450px;
+      display: flex;
+      flex-direction: column;
+      background: #1e2329;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 16px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    /* 카드 예측 영역 */
+    .card-prediction-section {
+      margin-bottom: 20px;
+    }
+    
+    .card-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .card {
+      background: #2b3139;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+      transition: all 0.3s;
+    }
+    
+    .card.active {
+      border-color: #0ecb81;
+      box-shadow: 0 0 20px rgba(14, 203, 129, 0.3);
+    }
+    
+    .card.waiting {
+      border-color: #9aa0a6;
+      opacity: 0.6;
+    }
+    
+    .card.verified {
+      border-color: #f6465d;
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e6eefc;
+    }
+    
+    .card-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .card-status.current {
+      background: rgba(14, 203, 129, 0.2);
+      color: #0ecb81;
+    }
+    
+    .card-status.predicted {
+      background: rgba(154, 160, 166, 0.2);
+      color: #9aa0a6;
+    }
+    
+    .card-status.verified {
+      background: rgba(246, 70, 93, 0.2);
+      color: #f6465d;
+    }
+    
+    .card-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .card-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .card-item-label {
+      font-size: 11px;
+      color: #9aa0a6;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .card-item-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e6eefc;
+    }
+    
+    .prediction-section {
+      background: rgba(14, 203, 129, 0.1);
+      border: 1px solid rgba(14, 203, 129, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    
+    .prediction-title {
+      font-size: 12px;
+      color: #0ecb81;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    
+    .prediction-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0ecb81;
+      margin-bottom: 4px;
+    }
+    
+    .prediction-confidence {
+      font-size: 11px;
+      color: #9aa0a6;
+    }
+    
+    .verification-section {
+      background: rgba(246, 70, 93, 0.1);
+      border: 1px solid rgba(246, 70, 93, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+    
+    .verification-title {
+      font-size: 12px;
+      color: #f6465d;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    
+    .verification-result {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .verification-icon {
+      font-size: 20px;
+    }
+    
+    .verification-text {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .verification-text.correct {
+      color: #0ecb81;
+    }
+    
+    .verification-text.incorrect {
+      color: #f6465d;
+    }
+    
+    .verification-details {
+      font-size: 11px;
+      color: #9aa0a6;
+      line-height: 1.5;
+    }
+    
+    .accuracy-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    
+    .accuracy-badge.high {
+      background: rgba(14, 203, 129, 0.2);
+      color: #0ecb81;
+    }
+    
+    .accuracy-badge.medium {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+    }
+    
+    .accuracy-badge.low {
+      background: rgba(246, 70, 93, 0.2);
+      color: #f6465d;
+    }
+    
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .card-btn {
+      flex: 1;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .card-btn.buy-btn {
+      background: #0ecb81;
+      color: #fff;
+    }
+    
+    .card-btn.buy-btn:hover {
+      background: #0db870;
+    }
+    
+    .card-btn.sell-btn {
+      background: #f6465d;
+      color: #fff;
+    }
+    
+    .card-btn.sell-btn:hover {
+      background: #e5354c;
+    }
+    
+    .card-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* 하단 카드 영역 (스크롤 가능) */
+    .bottom-cards-section {
+      width: 100%;
+      background: #1e2329;
+      border-top: 2px solid rgba(255, 255, 255, 0.1);
+      padding: 0;
+      min-height: 100vh;
+      flex-shrink: 0;
+      flex-grow: 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      display: flex;
+      gap: 0;
+      overflow: hidden;
+      position: relative;
+      resize: vertical;
+    }
+    
+    .bottom-cards-section .container-fluid {
+      height: 100%;
+      min-height: 100%;
+      padding: 0;
+    }
+    
+    .bottom-cards-section .row {
+      height: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+    
+    
+    .verified-cards-panel,
+    .bought-cards-panel {
+      min-width: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .verified-cards-panel {
+      border-right: none;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .verified-cards-panel .section-title,
+    .bought-cards-panel .section-title {
+      margin-bottom: 12px;
+      margin-top: 0;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 8px 0;
+      color: #e6eefc;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+    
+    .cards-container {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 12px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-bottom: 12px;
+      align-content: flex-start;
+      align-items: flex-start;
+      flex: 1;
+      min-height: 0;
+    }
+    
+    /* 카드 컨테이너 스크롤바 */
+    .cards-container::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    .cards-container::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+    
+    .cards-container::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #0ecb81 0%, #0db870 100%);
+      border-radius: 4px;
+      min-height: 30px;
+    }
+    
+    .cards-container::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #0db870 0%, #0ca760 100%);
+    }
+    
+    /* 패널 스크롤바 */
+    .verified-cards-panel::-webkit-scrollbar,
+    .bought-cards-panel::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .verified-cards-panel::-webkit-scrollbar-track,
+    .bought-cards-panel::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+    }
+    
+    .verified-cards-panel::-webkit-scrollbar-thumb,
+    .bought-cards-panel::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #f6465d 0%, #e63950 100%);
+      border-radius: 4px;
+    }
+    
+    .bought-cards-panel::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #0ecb81 0%, #0db870 100%);
+    }
+    
+    /* Firefox 스크롤바 */
+    .cards-container,
+    .verified-cards-panel,
+    .bought-cards-panel {
+      scrollbar-width: thin;
+      scrollbar-color: #0ecb81 rgba(255, 255, 255, 0.05);
+    }
+    
+    .verified-cards-panel {
+      scrollbar-color: #f6465d rgba(255, 255, 255, 0.05);
+    }
+    
+    .bought-card,
+    .verified-card {
+      background: #2b3139;
+      border-radius: 10px;
+      padding: 10px;
+      flex: 0 0 320px;
+      width: 320px;
+      min-width: 300px;
+      max-width: 350px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+      margin: 0;
+      z-index: 1;
+      overflow: hidden;
+      gap: 8px;
+    }
+    
+    .bought-card:hover,
+    .verified-card:hover {
+      z-index: 2;
+    }
+    
+    /* 카드 컨테이너가 좁을 때 카드 너비 조정 */
+    @media (max-width: 700px) {
+      .bought-card,
+      .verified-card {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+      }
+    }
+    
+    .bought-card:hover,
+    .verified-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .bought-card {
+      border: 2px solid #0ecb81;
+    }
+    
+    .verified-card {
+      border: 2px solid #f6465d;
+    }
+    
+    .bought-card .card-header,
+    .verified-card .card-header {
+      margin-bottom: 10px;
+      padding: 0;
+    }
+    
+    .bought-card .card-content,
+    .verified-card .card-content {
+      gap: 6px;
+      padding: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .bought-card .card-item,
+    .verified-card .card-item {
+      padding: 3px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    
+    .bought-card .card-item-label,
+    .verified-card .card-item-label {
+      margin-bottom: 0;
+      font-size: 10px;
+      color: #9aa0a6;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    
+    .bought-card .card-item-value,
+    .verified-card .card-item-value {
+      font-size: 12px;
+      color: #e6eefc;
+      font-weight: 600;
+      text-align: left;
+      flex: 1;
+    }
+    
+    /* 카드 내부 섹션 스타일 */
+    .bought-card > div[style*="background"],
+    .verified-card > div[style*="background"] {
+      margin-bottom: 6px !important;
+      padding: 8px !important;
+    }
+    
+    .bought-card .card-actions,
+    .verified-card .card-actions {
+      margin-top: 10px;
+      padding: 0;
+    }
+    
+    /* 카드 내부 그래프 섹션 */
+    .bought-card .card-chart-section,
+    .verified-card .card-chart-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .bought-card .card-chart-section .chart-label,
+    .verified-card .card-chart-section .chart-label {
+      font-size: 10px;
+      color: #9aa0a6;
+      margin-bottom: 4px;
+    }
+    
+    .bought-card .card-chart-section > div[id^="verifiedChart"],
+    .bought-card .card-chart-section > div[id^="boughtChart"],
+    .verified-card .card-chart-section > div[id^="verifiedChart"],
+    .verified-card .card-chart-section > div[id^="boughtChart"] {
+      width: 100% !important;
+      height: 100px !important;
+      overflow: hidden !important;
+      position: relative;
+    }
+    
+    .bought-card .card-chart-section canvas,
+    .verified-card .card-chart-section canvas {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    
+    .bought-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .bought-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #0ecb81;
+    }
+    
+    .bought-card-status {
+      font-size: 11px;
+      padding: 4px 8px;
+      background: rgba(14, 203, 129, 0.2);
+      color: #0ecb81;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    
+    .analysis-header {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .analysis-section {
+      margin-bottom: 20px;
+    }
+    
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #9aa0a6;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .info-card {
+      background: #2b3139;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .info-label {
+      color: #9aa0a6;
+      font-size: 13px;
+    }
+    
+    .info-value {
+      color: #e6eefc;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    /* 분봉별 카드 히스토리 영역 */
+    .timeframe-cards-history-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #timeframeCardsHistoryContainer {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .timeframe-history-group {
+      background: #2b3139;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.3s;
+    }
+    
+    .timeframe-history-group.active {
+      border-color: #0ecb81;
+      box-shadow: 0 0 15px rgba(14, 203, 129, 0.2);
+      background: #2b3139;
+    }
+    
+    .timeframe-history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .timeframe-history-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e6eefc;
+    }
+    
+    .timeframe-history-group.active .timeframe-history-title {
+      color: #0ecb81;
+    }
+    
+    .timeframe-history-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .timeframe-history-card {
+      background: #1e2329;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px;
+      opacity: 0.8;
+    }
+    
+    .timeframe-history-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .timeframe-history-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #9aa0a6;
+    }
+    
+    .timeframe-history-card-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 12px;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge.buy {
+      background: rgba(14, 203, 129, 0.2);
+      color: #0ecb81;
+    }
+    
+    .badge.sell {
+      background: rgba(246, 70, 93, 0.2);
+      color: #f6465d;
+    }
+    
+    .badge.neutral {
+      background: rgba(154, 160, 166, 0.2);
+      color: #9aa0a6;
+    }
+    
+    .trend-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    
+    .trend-indicator.up {
+      background: #0ecb81;
+    }
+    
+    .trend-indicator.down {
+      background: #f6465d;
+    }
+    
+    .trend-indicator.neutral {
+      background: #9aa0a6;
+    }
+    
+    .analysis-text {
+      background: #2b3139;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e6eefc;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #9aa0a6;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+    
+    .status-indicator.active {
+      background: #0ecb81;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    
+    /* 자산 정보 영역 */
+    .balance-section {
+      background: #2b3139;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .balance-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .balance-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e6eefc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .balance-refresh-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #9aa0a6;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .balance-refresh-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e6eefc;
+    }
+    
+    .balance-total {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0ecb81;
+      margin-bottom: 12px;
+    }
+    
+    .balance-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .balance-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .balance-item:last-child {
+      border-bottom: none;
+    }
+    
+    .balance-item-label {
+      font-size: 13px;
+      color: #9aa0a6;
+    }
+    
+    .balance-item-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e6eefc;
+    }
+    
+    .balance-item-value.krw {
+      color: #0ecb81;
+    }
+    
+    .balance-item-value.btc {
+      color: #f7931a;
+    }
+    
+    .balance-loading {
+      text-align: center;
+      padding: 20px;
+      color: #9aa0a6;
+      font-size: 13px;
+    }
+    
+    .balance-error {
+      text-align: center;
+      padding: 20px;
+      color: #f6465d;
+      font-size: 13px;
+    }

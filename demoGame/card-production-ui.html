@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카드 생산 시스템</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .card-body {
+            padding: 25px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-danger {
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: bold;
+        }
+        
+        .progress {
+            height: 30px;
+            border-radius: 15px;
+            background-color: #e9ecef;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: width 0.3s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .log-container {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-left: 3px solid transparent;
+            padding-left: 10px;
+        }
+        
+        .log-entry.info {
+            border-left-color: #4CAF50;
+            color: #81c784;
+        }
+        
+        .log-entry.warning {
+            border-left-color: #ff9800;
+            color: #ffb74d;
+        }
+        
+        .log-entry.error {
+            border-left-color: #f44336;
+            color: #e57373;
+        }
+        
+        .log-entry.success {
+            border-left-color: #2196F3;
+            color: #64b5f6;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-select, .form-control {
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            padding: 10px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-select:focus, .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .badge {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .stats-card h6 {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .stats-card .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.15em;
+        }
+        
+        .card-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .card-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .card-item-header {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-item-body {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .card-item-body .row {
+            margin-bottom: 5px;
+        }
+        
+        .icon-button {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .icon-button:hover {
+            color: #764ba2;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="text-center mb-4">
+            <h1 class="text-white mb-2">
+                <i class="fas fa-id-card"></i> 카드 생산 시스템
+            </h1>
+            <p class="text-white-50">N/B 값 기반 카드 생산 및 관리</p>
+        </div>
+
+        <!-- 설정 카드 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cog"></i> 생산 설정
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-clock"></i> 타임프레임 선택
+                        </label>
+                        <select class="form-select" id="timeframeSelect">
+                            <option value="1m">1분 (1m)</option>
+                            <option value="3m">3분 (3m)</option>
+                            <option value="5m" selected>5분 (5m)</option>
+                            <option value="15m">15분 (15m)</option>
+                            <option value="30m">30분 (30m)</option>
+                            <option value="60m">60분 (60m)</option>
+                            <option value="1d">1일 (1d)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag"></i> N/B 소수점 자릿수
+                        </label>
+                        <input type="number" class="form-control" id="decimalPlaces" value="10" min="1" max="20">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-chart-line"></i> 좌측 차트 MAX N/B 값
+                        </label>
+                        <input type="number" class="form-control" id="chartMaxNb" step="0.0000000001" placeholder="자동 계산">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-chart-line"></i> 좌측 차트 MIN N/B 값
+                        </label>
+                        <input type="number" class="form-control" id="chartMinNb" step="0.0000000001" placeholder="자동 계산">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="useLeftChartValues" checked>
+                            <label class="form-check-label" for="useLeftChartValues">
+                                좌측 차트 MAX/MIN 값 우선 사용 (우선순위 생산)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <button class="btn btn-primary w-100" id="startProductionBtn">
+                            <i class="fas fa-play"></i> 카드 생산 시작
+                        </button>
+                        <button class="btn btn-danger w-100 mt-2" id="stopProductionBtn" disabled>
+                            <i class="fas fa-stop"></i> 생산 중단
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 진행률 카드 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-tasks"></i> 생산 진행률
+            </div>
+            <div class="card-body">
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" id="progressBar" style="width: 0%">
+                        0%
+                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <span id="progressText" class="text-muted">대기 중...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6><i class="fas fa-id-card"></i> 총 생산 카드</h6>
+                    <div class="value" id="totalCards">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6><i class="fas fa-check-circle"></i> 활성 카드</h6>
+                    <div class="value" id="activeCards">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6><i class="fas fa-clock"></i> 평균 생산 시간</h6>
+                    <div class="value" id="avgTime">0초</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h6><i class="fas fa-exclamation-triangle"></i> 오류 발생</h6>
+                    <div class="value" id="errorCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 로그 카드 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-terminal"></i> 생산 로그
+                <button class="btn btn-sm btn-light float-end" id="clearLogsBtn">
+                    <i class="fas fa-trash"></i> 로그 지우기
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry info">
+                        [시스템] 카드 생산 시스템이 준비되었습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 생산된 카드 목록 -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-list"></i> 생산된 카드 목록
+                <button class="btn btn-sm btn-light float-end" id="refreshCardsBtn">
+                    <i class="fas fa-sync-alt"></i> 새로고침
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="card-list" id="cardList">
+                    <div class="text-center text-muted">
+                        아직 생산된 카드가 없습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 전역 변수
+        let isProductionRunning = false;
+        let productionWorker = null;
+        let totalCards = 0;
+        let activeCards = 0;
+        let errorCount = 0;
+        let productionTimes = [];
+
+        // DOM 요소
+        const startBtn = document.getElementById('startProductionBtn');
+        const stopBtn = document.getElementById('stopProductionBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const logContainer = document.getElementById('logContainer');
+        const cardList = document.getElementById('cardList');
+        const clearLogsBtn = document.getElementById('clearLogsBtn');
+        const refreshCardsBtn = document.getElementById('refreshCardsBtn');
+
+        // 이벤트 리스너
+        startBtn.addEventListener('click', startProduction);
+        stopBtn.addEventListener('click', stopProduction);
+        clearLogsBtn.addEventListener('click', clearLogs);
+        refreshCardsBtn.addEventListener('click', refreshCards);
+
+        // 로그 추가 함수
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString('ko-KR');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // 진행률 업데이트
+        function updateProgress(percent, message) {
+            progressBar.style.width = `${percent}%`;
+            progressBar.textContent = `${percent}%`;
+            progressText.textContent = message || '진행 중...';
+        }
+
+        // 카드 생산 시작
+        function startProduction() {
+            if (isProductionRunning) {
+                addLog('이미 생산이 진행 중입니다.', 'warning');
+                return;
+            }
+
+            const timeframe = document.getElementById('timeframeSelect').value;
+            const decimalPlaces = parseInt(document.getElementById('decimalPlaces').value);
+            const chartMaxNb = document.getElementById('chartMaxNb').value;
+            const chartMinNb = document.getElementById('chartMinNb').value;
+            const useLeftChart = document.getElementById('useLeftChartValues').checked;
+
+            isProductionRunning = true;
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            updateProgress(0, '카드 생산 시작...');
+
+            addLog(`카드 생산을 시작합니다. (타임프레임: ${timeframe}, 소수점: ${decimalPlaces}자리)`, 'info');
+
+            // 시뮬레이션: 실제로는 백엔드 API를 호출해야 함
+            simulateProduction(timeframe, decimalPlaces, chartMaxNb, chartMinNb, useLeftChart);
+        }
+
+        // 카드 생산 중단
+        function stopProduction() {
+            if (!isProductionRunning) {
+                return;
+            }
+
+            isProductionRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            updateProgress(0, '생산 중단됨');
+
+            if (productionWorker) {
+                clearInterval(productionWorker);
+                productionWorker = null;
+            }
+
+            addLog('카드 생산이 중단되었습니다.', 'warning');
+        }
+
+        // 생산 시뮬레이션 (실제로는 백엔드 API 호출)
+        function simulateProduction(timeframe, decimalPlaces, chartMaxNb, chartMinNb, useLeftChart) {
+            const startTime = Date.now();
+            let currentProgress = 0;
+            const steps = [
+                { progress: 5, message: '타임프레임 목록 가져오는 중...', log: '📊 타임프레임 목록 가져오는 중...' },
+                { progress: 10, message: '차트 데이터 조회 중...', log: '📊 차트 데이터 조회 중... (타임프레임: ' + timeframe + ')' },
+                { progress: 30, message: 'MAX/MIN 값 계산 중...', log: '📊 MAX/MIN N/B 값 계산 중...' },
+                { progress: 50, message: 'N/B 값 중복 체크 중...', log: '📊 N/B 값 중복 체크 중...' },
+                { progress: 70, message: '카드 타입 결정 중...', log: '📊 카드 타입 결정 중...' },
+                { progress: 85, message: '카드 데이터 저장 중...', log: '📊 카드 데이터 저장 중...' },
+                { progress: 95, message: '카드 생성 완료 중...', log: '✅ 카드 생성 완료!' },
+                { progress: 100, message: '생산 완료!', log: '🎉 카드 생산이 완료되었습니다!' }
+            ];
+
+            let stepIndex = 0;
+
+            productionWorker = setInterval(() => {
+                if (!isProductionRunning) {
+                    return;
+                }
+
+                if (stepIndex < steps.length) {
+                    const step = steps[stepIndex];
+                    currentProgress = step.progress;
+                    updateProgress(currentProgress, step.message);
+                    addLog(step.log, step.progress === 100 ? 'success' : 'info');
+                    stepIndex++;
+                } else {
+                    // 생산 완료
+                    clearInterval(productionWorker);
+                    productionWorker = null;
+                    
+                    const endTime = Date.now();
+                    const duration = ((endTime - startTime) / 1000).toFixed(2);
+                    productionTimes.push(parseFloat(duration));
+                    
+                    // 카드 생성
+                    const cardId = 'CARD-' + Date.now();
+                    const card = {
+                        id: cardId,
+                        timeframe: timeframe,
+                        maxNb: chartMaxNb || (Math.random() * 100).toFixed(decimalPlaces),
+                        minNb: chartMinNb || (Math.random() * 100).toFixed(decimalPlaces),
+                        decimalPlaces: decimalPlaces,
+                        productionTime: new Date().toISOString(),
+                        duration: duration
+                    };
+
+                    addCardToList(card);
+                    totalCards++;
+                    activeCards++;
+                    updateStats();
+
+                    isProductionRunning = false;
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    updateProgress(0, '대기 중...');
+                }
+            }, 800); // 각 단계마다 0.8초
+        }
+
+        // 카드 목록에 추가
+        function addCardToList(card) {
+            if (cardList.querySelector('.text-center')) {
+                cardList.innerHTML = '';
+            }
+
+            const cardItem = document.createElement('div');
+            cardItem.className = 'card-item';
+            cardItem.innerHTML = `
+                <div class="card-item-header">
+                    <span><i class="fas fa-id-card"></i> ${card.id}</span>
+                    <button class="icon-button" onclick="deleteCard('${card.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <div class="card-item-body">
+                    <div class="row">
+                        <div class="col-6"><strong>타임프레임:</strong></div>
+                        <div class="col-6">${card.timeframe}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>MAX N/B:</strong></div>
+                        <div class="col-6">${card.maxNb}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>MIN N/B:</strong></div>
+                        <div class="col-6">${card.minNb}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>생산 시간:</strong></div>
+                        <div class="col-6">${new Date(card.productionTime).toLocaleString('ko-KR')}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6"><strong>소요 시간:</strong></div>
+                        <div class="col-6">${card.duration}초</div>
+                    </div>
+                </div>
+            `;
+            cardList.insertBefore(cardItem, cardList.firstChild);
+        }
+
+        // 카드 삭제
+        function deleteCard(cardId) {
+            if (confirm('이 카드를 삭제하시겠습니까?')) {
+                const cardItems = cardList.querySelectorAll('.card-item');
+                cardItems.forEach(item => {
+                    if (item.textContent.includes(cardId)) {
+                        item.remove();
+                        activeCards--;
+                        updateStats();
+                    }
+                });
+
+                if (cardList.children.length === 0) {
+                    cardList.innerHTML = '<div class="text-center text-muted">아직 생산된 카드가 없습니다.</div>';
+                }
+
+                addLog(`카드 ${cardId}가 삭제되었습니다.`, 'info');
+            }
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            document.getElementById('totalCards').textContent = totalCards;
+            document.getElementById('activeCards').textContent = activeCards;
+            
+            if (productionTimes.length > 0) {
+                const avg = (productionTimes.reduce((a, b) => a + b, 0) / productionTimes.length).toFixed(2);
+                document.getElementById('avgTime').textContent = avg + '초';
+            }
+            
+            document.getElementById('errorCount').textContent = errorCount;
+        }
+
+        // 로그 지우기
+        function clearLogs() {
+            logContainer.innerHTML = '<div class="log-entry info">[시스템] 로그가 지워졌습니다.</div>';
+        }
+
+        // 카드 목록 새로고침
+        function refreshCards() {
+            addLog('카드 목록을 새로고침합니다...', 'info');
+            // 실제로는 백엔드에서 카드 목록을 가져와야 함
+        }
+
+        // 초기화
+        updateStats();
+        addLog('시스템이 준비되었습니다. 카드 생산을 시작할 수 있습니다.', 'success');
+    </script>
+</body>
+</html>

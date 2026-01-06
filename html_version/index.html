@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자동 매매 시스템 - HTML 버전</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/chart.css">
+    <!-- Chart.js 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- TradingView Lightweight Charts -->
+    <script src='https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js'></script>
+    <style>
+        /* 차트 분석 탭 스타일 */
+        .chart-analysis-container {
+            display: flex;
+            height: calc(100vh - 200px);
+            gap: 12px;
+            padding: 12px;
+        }
+        
+        .chart-analysis-left {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: #1e2329;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px;
+            overflow: hidden;
+        }
+        
+        .chart-analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        
+        .chart-analysis-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e6eefc;
+        }
+        
+        .chart-analysis-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .chart-analysis-controls select,
+        .chart-analysis-controls button {
+            background: #2b3139;
+            color: #e6eefc;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        #chartAnalysisChart {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+        }
+        
+        .chart-analysis-right {
+            width: 450px;
+            display: flex;
+            flex-direction: column;
+            background: #1e2329;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 16px;
+            overflow-y: auto;
+            max-height: calc(100vh - 160px);
+            box-sizing: border-box;
+        }
+
+        .chart-analysis-right > div {
+            max-height: 360px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        
+        .card-prediction-section {
+            margin-bottom: 20px;
+        }
+        
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .prediction-card {
+            background: #2b3139;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s;
+        }
+        
+        .prediction-card.active {
+            border-color: #0ecb81;
+            box-shadow: 0 0 20px rgba(14, 203, 129, 0.3);
+        }
+        
+        .prediction-card.waiting {
+            border-color: #9aa0a6;
+            opacity: 0.6;
+        }
+        
+        .prediction-card.verified {
+            border-color: #f6465d;
+        }
+        
+        .prediction-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .prediction-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e6eefc;
+        }
+        
+        .prediction-card-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .prediction-card-status.current {
+            background: rgba(14, 203, 129, 0.2);
+            color: #0ecb81;
+        }
+        
+        .prediction-card-status.predicted {
+            background: rgba(154, 160, 166, 0.2);
+            color: #9aa0a6;
+        }
+        
+        .prediction-card-status.verified {
+            background: rgba(246, 70, 93, 0.2);
+            color: #f6465d;
+        }
+        
+        .prediction-card-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .prediction-card-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .prediction-card-label {
+            font-size: 11px;
+            color: #9aa0a6;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        
+        .prediction-card-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e6eefc;
+        }
+        
+        .prediction-section {
+            background: rgba(14, 203, 129, 0.1);
+            border: 1px solid rgba(14, 203, 129, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        
+        .prediction-title {
+            font-size: 12px;
+            color: #0ecb81;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .prediction-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0ecb81;
+            margin-bottom: 4px;
+        }
+        
+        .prediction-confidence {
+            font-size: 11px;
+            color: #9aa0a6;
+        }
+        
+        .verification-section {
+            background: rgba(246, 70, 93, 0.1);
+            border: 1px solid rgba(246, 70, 93, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+        
+        .verification-title {
+            font-size: 12px;
+            color: #f6465d;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .verification-result {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .verification-icon {
+            font-size: 20px;
+        }
+        
+        .verification-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .verification-text.correct {
+            color: #0ecb81;
+        }
+        
+        .verification-text.incorrect {
+            color: #f6465d;
+        }
+        
+        .verification-details {
+            font-size: 11px;
+            color: #9aa0a6;
+            line-height: 1.5;
+        }
+        
+        .accuracy-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        
+        .accuracy-badge.high {
+            background: rgba(14, 203, 129, 0.2);
+            color: #0ecb81;
+        }
+        
+        .accuracy-badge.medium {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .accuracy-badge.low {
+            background: rgba(246, 70, 93, 0.2);
+            color: #f6465d;
+        }
+        
+        .analysis-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #9aa0a6;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        
+        .info-card {
+            background: #2b3139;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #9aa0a6;
+            font-size: 13px;
+        }
+        
+        .info-value {
+            color: #e6eefc;
+            font-size: 13px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <!-- 메뉴바 -->
+    <nav class="menubar">
+        <div class="menu-item" onclick="showSettings()">설정</div>
+        <!-- 강화학습 AI 실시간 상태 -->
+        <div id="rl-ai-status" class="rl-ai-status-bar">
+            <span class="rl-ai-status-icon">🧠</span>
+            <span class="rl-ai-status-text">강화학습 AI 초기화 중...</span>
+        </div>
+    </nav>
+
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <!-- 왼쪽 사이드바 -->
+        <aside class="sidebar">
+            <!-- BTC 가격 -->
+            <div class="sidebar-item">
+                <label>BTC 현재 가격</label>
+                <div class="value" id="btc-price">0</div>
+            </div>
+
+            <!-- KRW 잔고 -->
+            <div class="sidebar-item">
+                <label>KRW 잔고:</label>
+                <div class="value" id="krw-balance">0</div>
+            </div>
+
+            <!-- BTC 잔고 -->
+            <div class="sidebar-item">
+                <label>BTC 잔고:</label>
+                <div class="value" id="btc-balance">0</div>
+            </div>
+
+            <!-- 총 자산 가치 -->
+            <div class="sidebar-item">
+                <label>총 자산 가치:</label>
+                <div class="value" id="total-value">0</div>
+            </div>
+
+            <!-- 구분선 -->
+            <hr class="separator">
+
+            <!-- 메인 차트 -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-header-row">
+                        <label>메인 차트</label>
+                        <select id="chart-timeframe" onchange="changeTimeframe(this.value)">
+                            <option value="1m">1분</option>
+                            <option value="3m">3분</option>
+                            <option value="5m">5분</option>
+                            <option value="15m">15분</option>
+                            <option value="30m">30분</option>
+                            <option value="60m">1시간</option>
+                            <option value="1d">1일</option>
+                        </select>
+                    </div>
+                    <div class="chart-cycle-controls">
+                        <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12px; color: #00d1ff;">
+                            <input type="checkbox" id="chart-cycle-mode" onchange="toggleChartCycle(this.checked)" style="cursor: pointer;">
+                            <span>분봉 순회</span>
+                        </label>
+                        <input type="number" id="chart-cycle-interval" value="30" min="10" max="300" step="10" 
+                               style="width: 60px; padding: 2px 5px; background: #1a1a2e; border: 1px solid #00d1ff; color: #00d1ff; border-radius: 4px; font-size: 11px;"
+                               onchange="updateChartCycleInterval(this.value)" title="순회 간격 (초)">
+                        <span style="font-size: 11px; color: #888;">초</span>
+                    </div>
+                </div>
+                <canvas id="main-chart" width="300" height="150"></canvas>
+                <div class="chart-info">
+                    <div>MAX N/B: <span id="chart-max-nb" style="color: #0ecb81; font-weight: bold;">0</span></div>
+                    <div>MIN N/B: <span id="chart-min-nb" style="color: #ff6b6b; font-weight: bold;">0</span></div>
+                    <div>N/B 값: <span id="chart-nb-value" style="color: #00d1ff; font-weight: bold;">0</span></div>
+                </div>
+                <div class="chart-cycle-status" id="chart-cycle-status">분봉 순회 OFF</div>
+            </div>
+
+            <!-- 차트 AI 분석 -->
+            <div class="chart-ai-container">
+                <div class="chart-ai-signal" id="chart-ai-signal">대기 중</div>
+                <div class="chart-ai-message" id="chart-ai-message">전체 차트 AI 분석 중..</div>
+            </div>
+
+            <!-- 구분선 -->
+            <hr class="separator">
+
+            <!-- 설정 영역 (간단한 정보만 표시) -->
+            <div class="sidebar-item" style="cursor: pointer; background-color: #2a1a3a; border: 1px solid #9d4edd;" onclick="showSettings()">
+                <label>⚙️ 설정 관리</label>
+                <div style="color: #9d4edd; font-size: 11px; margin-top: 5px;">클릭하여 모든 설정 변경</div>
+            </div>
+            
+            <!-- 현재 설정 요약 (읽기 전용) -->
+            <div class="sidebar-item" style="opacity: 0.8;">
+                <label>최소 매수 금액:</label>
+                <div class="value" id="sidebar-min-amount">5000</div>
+                <span>KRW</span>
+            </div>
+
+            <div class="sidebar-item" style="opacity: 0.8;">
+                <label>수수료:</label>
+                <div class="value" id="sidebar-fee-rate">0.1</div>
+                <span>%</span>
+            </div>
+
+            <div class="sidebar-item" style="opacity: 0.8;">
+                <label>업데이트 주기:</label>
+                <div class="value" id="sidebar-update-cycle">25</div>
+                <span>초</span>
+            </div>
+
+            <!-- 실제 트레이딩 토글 -->
+            <div class="sidebar-item">
+                <label>실제 트레이딩:</label>
+                <button id="trade-toggle" class="toggle-btn" onclick="toggleRealTrading()">OFF</button>
+            </div>
+
+            <!-- 프로세스 진행 상태 -->
+            <div class="progress-container">
+                <div class="progress-label" id="process-status">전체 프로세스 업데이트 중..</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="process-progress" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- AI 업데이트 상태 -->
+            <div class="ai-progress-container">
+                <div class="ai-status-icon" id="ai-status-icon">○</div>
+                <div class="ai-progress-label" id="ai-progress-label">전체 AI 시스템 업데이트 중..</div>
+                <div class="ai-progress-percent" id="ai-progress-percent">0%</div>
+            </div>
+        </aside>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="main-content">
+            <!-- 탭 메뉴 -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab(0)">생산 카드</button>
+                <button class="tab-btn" onclick="switchTab(1)">🧠 AI 검증</button>
+                <button class="tab-btn" onclick="switchTab(2)">📜 히스토리</button>
+                <button class="tab-btn" onclick="switchTab(3)">💰 내 자산</button>
+                <button class="tab-btn" onclick="switchTab(4)">📊 차트 분석</button>
+            </div>
+
+            <!-- 탭 콘텐츠 -->
+            <div class="tab-content">
+                <!-- 생산 카드 탭 -->
+                <div class="tab-pane active" id="tab-0">
+                    <!-- 생산 카드 통계 -->
+                    <div class="production-stats-container" id="production-stats">
+                        <!-- 전체 카드 Zone 분석 및 예측 -->
+                        <div class="zone-analysis-summary" id="zone-analysis-summary">
+                            <div class="zone-summary-loading">Zone 분석 중...</div>
+                        </div>
+                        <div class="production-stats-row">
+                            <!-- 왼쪽 영역: 기본 통계 -->
+                            <div class="production-stats-section stats-left">
+                                <div class="production-stat-item">
+                                    <div class="stat-label">생성된 카드</div>
+                                    <div class="stat-value" id="stat-total-cards">0</div>
+                                </div>
+                                <div class="production-stat-item">
+                                    <div class="stat-label">분석 중</div>
+                                    <div class="stat-value" id="stat-analyzing-cards">0</div>
+                                </div>
+                                <div class="production-stat-item">
+                                    <div class="stat-label">대기 중</div>
+                                    <div class="stat-value" id="stat-waiting-cards">0</div>
+                                </div>
+                                <div class="production-stat-item">
+                                    <div class="stat-label">순회 인덱스</div>
+                                    <div class="stat-value" id="stat-current-index">-</div>
+                                </div>
+                                <div class="production-stat-item">
+                                    <div class="stat-label">마지막 업데이트</div>
+                                    <div class="stat-value" id="stat-last-update">-</div>
+                                </div>
+                                <div class="production-stat-item">
+                                    <div class="stat-label">최근 생성 시간</div>
+                                    <div class="stat-value" id="stat-latest-card-time">-</div>
+                                </div>
+                                <div class="production-stat-item">
+                                    <div class="stat-label">생산 가능 카드</div>
+                                    <div class="stat-value" id="stat-available-cards">-</div>
+                                </div>
+                            </div>
+                            <!-- 오른쪽 영역: N/B 및 상태 -->
+                            <div class="production-stats-section stats-right">
+                                <div class="stats-right-top">
+                                    <div class="production-stat-item">
+                                        <div class="stat-label">현재 N/B MAX</div>
+                                        <div class="stat-value" id="stat-current-nb-max" style="color: #0ecb81; font-weight: bold;">-</div>
+                                    </div>
+                                    <div class="production-stat-item">
+                                        <div class="stat-label">현재 N/B MIN</div>
+                                        <div class="stat-value" id="stat-current-nb-min" style="color: #ff6b6b; font-weight: bold;">-</div>
+                                    </div>
+                                    <div class="production-stat-item">
+                                        <div class="stat-label">카드 타입</div>
+                                        <div class="stat-value" id="stat-card-type">-</div>
+                                    </div>
+                                    <div class="production-stat-item">
+                                        <div class="stat-label">생산 상태</div>
+                                        <div class="stat-value" id="stat-production-status">-</div>
+                                    </div>
+                                </div>
+                                <div class="stats-right-bottom">
+                                    <div class="stat-label">생산 제한 사유</div>
+                                    <div class="stat-value" id="stat-production-reason" style="font-size: 11px; color: #888888;">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="production-cards"></div>
+                    <div class="production-log-container">
+                        <div class="log-header">전체 생산 카드 로그</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="production-progress" style="width: 0%"></div>
+                        </div>
+                        <div class="log-text" id="production-log"></div>
+                    </div>
+                </div>
+
+                <!-- AI 검증 탭 -->
+                <div class="tab-pane" id="tab-1">
+                    <div class="verification-stats" id="verification-stats"></div>
+                    <div class="masonry-layout" id="verification-cards"></div>
+                </div>
+
+                <!-- 생산 카드 로그 탭 -->
+                <div class="tab-pane" id="tab-2">
+                    <div class="card-logs-container">
+                        <div class="card-logs-header">
+                            <h2>📋 생산 카드 전체 로그</h2>
+                            <div class="card-logs-controls">
+                                <select id="log-card-filter" class="log-filter-select">
+                                    <option value="all">전체 카드</option>
+                                </select>
+                                <button id="refresh-logs-btn" class="refresh-logs-btn">🔄 새로고침</button>
+                                <button id="clear-logs-btn" class="clear-logs-btn">🗑️ 로그 지우기</button>
+                            </div>
+                        </div>
+                        <div class="card-logs-content" id="card-logs-content">
+                            <div class="logs-loading">로딩 중...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 내 자산 탭 -->
+                <div class="tab-pane" id="tab-3">
+                    <div class="balance-container">
+                        <div class="balance-header">
+                            <h2>💰 업비트 내 자산</h2>
+                            <button id="refresh-balance-btn" class="refresh-balance-btn" onclick="refreshUpbitBalance()">🔄 새로고침</button>
+                        </div>
+                        <div class="balance-content" id="upbit-balance-content">
+                            <div class="balance-loading">자산 정보를 불러오는 중...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 차트 분석 탭 -->
+                <div class="tab-pane" id="tab-4">
+                    <div class="chart-analysis-container">
+                        <!-- 좌측 차트 영역 -->
+                        <div class="chart-analysis-left">
+                            <div class="chart-analysis-header">
+                                <div class="chart-analysis-title">KRW-BTC 차트</div>
+                                <div class="chart-analysis-controls">
+                                    <select id="chartAnalysisTimeframe">
+                                        <option value="minute1">1분</option>
+                                        <option value="minute3">3분</option>
+                                        <option value="minute5">5분</option>
+                                        <option value="minute10" selected>10분</option>
+                                        <option value="minute15">15분</option>
+                                        <option value="minute30">30분</option>
+                                        <option value="minute60">1시간</option>
+                                        <option value="day">1일</option>
+                                    </select>
+                                    <button id="chartAnalysisReset">초기화</button>
+                                </div>
+                            </div>
+                            <div id="chartAnalysisChart"></div>
+                        </div>
+                        
+                        <!-- 우측 분석 영역 -->
+                        <div class="chart-analysis-right">
+                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                                차트 분석
+                            </div>
+                            
+                            <!-- 카드 예측 시스템 -->
+                            <div class="card-prediction-section">
+                                <div class="section-title">카드 예측 시스템</div>
+                                
+                                <!-- 카드 1 -->
+                                <div class="card-container">
+                                    <div class="prediction-card active" id="predictionCard1">
+                                        <div class="prediction-card-header">
+                                            <div class="prediction-card-title">카드 1</div>
+                                            <div class="prediction-card-status current" id="predictionCard1Status">현재</div>
+                                        </div>
+                                        <div class="prediction-card-content">
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">가격</div>
+                                                <div class="prediction-card-value" id="predictionCard1Price">-</div>
+                                            </div>
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">시간</div>
+                                                <div class="prediction-card-value" id="predictionCard1Time">-</div>
+                                            </div>
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">EMA 빠름</div>
+                                                <div class="prediction-card-value" id="predictionCard1EmaFast">-</div>
+                                            </div>
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">EMA 느림</div>
+                                                <div class="prediction-card-value" id="predictionCard1EmaSlow">-</div>
+                                            </div>
+                                        </div>
+                                        <div class="prediction-section" id="predictionCard1Prediction">
+                                            <div class="prediction-title">다음 카드 예측</div>
+                                            <div class="prediction-value" id="predictionCard1PredictedPrice">-</div>
+                                            <div class="prediction-confidence" id="predictionCard1Confidence">신뢰도: -</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 카드 2 -->
+                                    <div class="prediction-card waiting" id="predictionCard2">
+                                        <div class="prediction-card-header">
+                                            <div class="prediction-card-title">카드 2</div>
+                                            <div class="prediction-card-status predicted" id="predictionCard2Status">예측됨</div>
+                                        </div>
+                                        <div class="prediction-card-content">
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">예측 가격</div>
+                                                <div class="prediction-card-value" id="predictionCard2PredictedPrice">-</div>
+                                            </div>
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">실제 가격</div>
+                                                <div class="prediction-card-value" id="predictionCard2ActualPrice">-</div>
+                                            </div>
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">시간</div>
+                                                <div class="prediction-card-value" id="predictionCard2Time">-</div>
+                                            </div>
+                                            <div class="prediction-card-item">
+                                                <div class="prediction-card-label">오차율</div>
+                                                <div class="prediction-card-value" id="predictionCard2Error">-</div>
+                                            </div>
+                                        </div>
+                                        <div class="verification-section" id="predictionCard2Verification" style="display: none;">
+                                            <div class="verification-title">검증 결과</div>
+                                            <div class="verification-result">
+                                                <span class="verification-icon" id="predictionVerificationIcon">-</span>
+                                                <span class="verification-text" id="predictionVerificationText">-</span>
+                                            </div>
+                                            <div class="verification-details" id="predictionVerificationDetails">-</div>
+                                            <div class="accuracy-badge" id="predictionAccuracyBadge" style="display: none;">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-card">
+                                    <div class="info-row">
+                                        <span class="info-label">예측 정확도</span>
+                                        <span class="info-value" id="predictionOverallAccuracy">-</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">예측 횟수</span>
+                                        <span class="info-value" id="predictionCount">0</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">성공 횟수</span>
+                                        <span class="info-value" id="predictionSuccessCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>설정</h2>
+                <span class="close" onclick="closeSettings()">&times;</span>
+            </div>
+            <div class="modal-body" id="settings-content">
+                <!-- 설정 내용은 JavaScript에서 동적으로 생성 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 스크립트 (캐시 버스팅: v=20241220-2) -->
+    <script src="js/bitCalculation.v.0.2.js?v=20241220-2"></script>
+    <script src="js/config.js?v=20241220-2"></script>
+    <script src="js/api.js?v=20241220-2"></script>
+    <script src="js/agents/nb-agent.js?v=20241220-2"></script>
+    <script src="js/agents/card-agent.js?v=20241220-2"></script>
+    <script src="js/agents/chart-agent.js?v=20241220-2"></script>
+    <script src="js/agents/ai-agent.js?v=20241220-2"></script>
+    <script src="js/rl_ai_simulation_messages.js?v=20241220-2"></script>
+    <script src="js/chart.js?v=20241220-2"></script>
+    <script src="js/card-chart.js?v=20241220-2"></script>
+    <script src="js/cards.js?v=20241220-2"></script>
+    <script src="js/main.js?v=20241220-2"></script>
+    <!-- 차트 분석 시스템 스크립트 -->
+    <script src="js/chart-analysis.js?v=20241220-2"></script>
+</body>
+</html>
+

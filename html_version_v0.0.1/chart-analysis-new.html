@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="styles.css" rel="stylesheet">
+  <meta http-equiv="Cache-Control" content="max-age=0">
+  <title>차트 분석 시스템 v2</title>
+  
+  <!-- External JavaScript Files -->
+  <script src="js/globals.js?v=20260109" defer></script>
+  <script src="js/config.js?v=20260109" defer></script>
+  <script src="js/stats.js?v=20260109" defer></script>
+  <script src="js/ui.js?v=20260109" defer></script>
+  <script src="js/timeframe.js?v=20260109" defer></script>
+  <script src="js/data-collection.js?v=20260109" defer></script>
+  <script src="js/nb-calculation.js?v=20260109" defer></script>
+  <script src="js/card-generation.js?v=20260109" defer></script>
+  <script src="js/charts-and-trading.js?v=20260109" defer></script>
+  <script src="js/reset.js?v=20260109" defer></script>
+  <script src="js/basic-analysis.js?v=20260109" defer></script>
+  <script src="js/ai-training.js?v=20260109" defer></script>
+  <script src="js/trading-cards.js?v=20260109" defer></script>
+  <script src="js/upbit-chart.js?v=20260109" defer></script>
+  <script src="js/progress-tracker.js?v=20260109" defer></script>
+  
+  <!-- Additional Module Files -->
+  <script src="js/main-functions.js?v=20260109" defer></script>
+  <script src="js/ui-helpers.js?v=20260109" defer></script>
+  <script src="js/utilities.js?v=20260109" defer></script>
+  <script src="js/flow-reset.js?v=20260109" defer></script>
+  <script src="js/init.js?v=20260109" defer></script>
+</head>
+<body>
+
+  <!-- 상단 헤더 -->
+  <header class="header-container">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-title">
+          <span class="header-title-icon">📊</span>
+          <span>차트 분석 시스템</span>
+        </div>
+        <span class="header-subtitle">Real-time Trading Analysis</span>
+      </div>
+      
+      <div class="header-right">
+        <!-- 상태 배지 -->
+        <div class="status-badge">
+          <span class="status-indicator"></span>
+          <span>시스템 실행 중</span>
+        </div>
+        
+        <!-- 통계 정보 -->
+        <div class="header-stats">
+          <div class="stat-item">
+            <span class="stat-label">총 카드</span>
+            <span class="stat-value" id="totalCards">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">정확도</span>
+            <span class="stat-value" id="accuracy">-%</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">AI 레벨</span>
+            <span class="stat-value" id="aiLevel">LV 1</span>
+          </div>
+        </div>
+        
+        <!-- 액션 버튼 -->
+        <div class="header-actions">
+          <button class="header-btn" onclick="refreshData()">🔄 데이터 새로고침</button>
+          <button class="header-btn" onclick="toggleAutoLoop()" id="autoLoopBtn">🔁 자동 순회</button>
+          <button class="header-btn primary" onclick="startAnalysis()">▶️ 분석 시작</button>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- 진행 단계 추적 -->
+  <div class="progress-tracker">
+    <div class="progress-tracker-content">
+      <div class="progress-steps">
+        
+        <!-- 0단계: 분봉 선택 -->
+        <div class="progress-step completed" id="step0" onclick="scrollToSection('timeframe-selection')" style="cursor: pointer;">
+          <div class="step-icon">⚙️</div>
+          <div class="step-info">
+            <div class="step-title">분봉 선택</div>
+            <div class="step-description">1분봉 선택됨</div>
+          </div>
+          <div class="step-status">완료</div>
+        </div>
+        
+        <!-- 1단계: 데이터 수집 -->
+        <div class="progress-step active" id="step1" onclick="scrollToSection('data-collection')" style="cursor: pointer;">
+          <div class="step-icon">1</div>
+          <div class="step-info">
+            <div class="step-title">데이터 수집</div>
+            <div class="step-description">차트 데이터 로딩 중..</div>
+          </div>
+          <div class="step-status">진행 중</div>
+        </div>
+        
+        <!-- 2단계: N/B 계산 -->
+        <div class="progress-step" id="step2" onclick="scrollToSection('nb-calculation')" style="cursor: pointer;">
+          <div class="step-icon">2</div>
+          <div class="step-info">
+            <div class="step-title">N/B 계산</div>
+            <div class="step-description">N/B 값 계산 대기중</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+        
+        <!-- 3단계: BIT MAX 조회 -->
+        <div class="progress-step" id="step3" onclick="scrollToSection('bitmax-query')" style="cursor: pointer;">
+          <div class="step-icon">3</div>
+          <div class="step-info">
+            <div class="step-title">BIT MAX 조회</div>
+            <div class="step-description">bit_max 기반 데이터 조회</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+        
+        <!-- 4단계: 카드 생성 -->
+        <div class="progress-step" id="step4" onclick="scrollToSection('card-generation')" style="cursor: pointer;">
+          <div class="step-icon">4</div>
+          <div class="step-info">
+            <div class="step-title">카드 생성</div>
+            <div class="step-description">카드 생산 대기중</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+        
+        <!-- 5단계: 기본 분석 -->
+        <div class="progress-step" id="step5" onclick="scrollToSection('basic-analysis')" style="cursor: pointer;">
+          <div class="step-icon">5</div>
+          <div class="step-info">
+            <div class="step-title">기본 분석</div>
+            <div class="step-description">카드 기본 분석 대기중</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+        
+        <!-- 6단계: AI 학습 -->
+        <div class="progress-step" id="step6" onclick="scrollToSection('ai-training')" style="cursor: pointer;">
+          <div class="step-icon">6</div>
+          <div class="step-info">
+            <div class="step-title">AI 학습</div>
+            <div class="step-description">모델 학습 대기중</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+
+        <!-- 7단계: AI 분석 -->
+        <div class="progress-step" id="step7" onclick="scrollToSection('ai-analysis')" style="cursor: pointer;">
+          <div class="step-icon">7</div>
+          <div class="step-info">
+            <div class="step-title">AI 분석</div>
+            <div class="step-description">AI 예측 대기중</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+
+        <!-- 8단계: 트레이딩 카드 -->
+        <div class="progress-step" id="step8" onclick="scrollToSection('trading-cards')" style="cursor: pointer;">
+          <div class="step-icon">8</div>
+          <div class="step-info">
+            <div class="step-title">트레이딩 카드</div>
+            <div class="step-description">카드 트레이딩 단계</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+        
+        <!-- 9단계: 플로우 리셋 -->
+        <div class="progress-step" id="step9" onclick="scrollToSection('full-reset')" style="cursor: pointer;">
+          <div class="step-icon">9</div>
+          <div class="step-info">
+            <div class="step-title">플로우 리셋</div>
+            <div class="step-description">플로우차트 초기화</div>
+          </div>
+          <div class="step-status">대기</div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+  
+  <!-- 메인 컨텐츠 영역 -->
+  <div class="main-container">
+    
+    <!-- 0단계: 분봉 선택 섹션 -->
+    <div class="timeframe-selection-section" id="timeframe-selection">
+      <div class="section-header">
+        <h2>⚙️ 0단계: 분봉 선택</h2>
+      </div>
+      
+      <div class="timeframe-grid">
+        <button class="timeframe-btn active" data-timeframe="1" onclick="selectTimeframe('1')">1분</button>
+        <button class="timeframe-btn" data-timeframe="3" onclick="selectTimeframe('3')">3분</button>
+        <button class="timeframe-btn" data-timeframe="5" onclick="selectTimeframe('5')">5분</button>
+        <button class="timeframe-btn" data-timeframe="10" onclick="selectTimeframe('10')">10분</button>
+        <button class="timeframe-btn" data-timeframe="15" onclick="selectTimeframe('15')">15분</button>
+        <button class="timeframe-btn" data-timeframe="30" onclick="selectTimeframe('30')">30뵔</button>
+        <button class="timeframe-btn" data-timeframe="60" onclick="selectTimeframe('60')">60분</button>
+        <button class="timeframe-btn" data-timeframe="1d" onclick="selectTimeframe('1d')">1일</button>
+      </div>
+      
+      <div class="selected-timeframe-info">
+        <div class="info-icon">ℹ️</div>
+        <div class="info-content">
+          <div class="info-title">선택된 분봉</div>
+          <div class="info-value" id="selectedTimeframe">1분봉</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 1단계: 데이터 수집 섹션 -->
+    <div class="data-collection-section" id="data-collection" style="margin-top: 24px;">
+      <div class="section-header">
+        <h2>📊 1단계: 데이터 수집</h2>
+        <button class="action-btn" onclick="collectData()">수집 시작</button>
+      </div>
+      
+      <div class="collection-grid row g-3">
+        <!-- 좌측: 플로우차트-->
+        <div class="flowchart-panel col-12 col-lg-6">
+          <div class="panel-title">데이터 수집 플로우</div>
+          <div class="flowchart-container">
+            
+            <!-- 단계 1: 시작 -->
+            <div class="flow-step" id="flow-start">
+              <div class="flow-icon">🎯</div>
+              <div class="flow-content">
+                <div class="flow-title">시작</div>
+                <div class="flow-desc">데이터 수집 요청</div>
+                <div class="flow-time" id="flow-start-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- 단계 2: API 호출 -->
+            <div class="flow-step" id="flow-api">
+              <div class="flow-icon">📡</div>
+              <div class="flow-content">
+                <div class="flow-title">API 호출</div>
+                <div class="flow-desc">GET /api/chart?timeframe=10m</div>
+                <div class="flow-time" id="flow-api-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- 단계 3: 데이터 수신 -->
+            <div class="flow-step" id="flow-receive">
+              <div class="flow-icon">📊</div>
+              <div class="flow-content">
+                <div class="flow-title">데이터 수신</div>
+                <div class="flow-desc">OHLCV 데이터 파싱</div>
+                <div class="flow-time" id="flow-receive-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- 단계 4: 데이터 검증 -->
+            <div class="flow-step" id="flow-validate">
+              <div class="flow-icon">✅</div>
+              <div class="flow-content">
+                <div class="flow-title">데이터 검증</div>
+                <div class="flow-desc">유효성 검사</div>
+                <div class="flow-time" id="flow-validate-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- 단계 5: 완료 -->
+            <div class="flow-step" id="flow-complete">
+              <div class="flow-icon">🎉</div>
+              <div class="flow-content">
+                <div class="flow-title">수집 완료</div>
+                <div class="flow-desc">다음 단계로 진행</div>
+                <div class="flow-time" id="flow-complete-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+          </div>
+        </div>
+        
+        <!-- 우측: 로그 + 미리보기 -->
+        <div class="col-12 col-lg-6 d-flex flex-column gap-3 right-column-scroll">
+          <div class="api-log-panel">
+            <div class="panel-title">API 호출 로그</div>
+            <div class="api-log-container" id="apiLog">
+              <div class="log-placeholder">데이터 수집을 시작하면 로그가 표시됩니다..</div>
+            </div>
+          </div>
+          <div class="data-preview-panel flex-grow-1">
+            <div class="panel-title">수집된 데이터 미리보기</div>
+            <div class="data-preview-grid">
+              
+              <div class="preview-card">
+                <div class="preview-label">차트 데이터</div>
+                <div class="preview-value" id="chartDataCount">-</div>
+                <div class="preview-desc">캔들 개수</div>
+              </div>
+              
+              <div class="preview-card">
+                <div class="preview-label">현재 가격</div>
+                <div class="preview-value" id="currentPrice">-</div>
+                <div class="preview-desc">KRW-BTC</div>
+              </div>
+              
+              <div class="preview-card">
+                <div class="preview-label">자산 정보</div>
+                <div class="preview-value" id="balanceTotal">-</div>
+                <div class="preview-desc">총 자산 (KRW)</div>
+              </div>
+              
+              <div class="preview-card">
+                <div class="preview-label">응답 시간</div>
+                <div class="preview-value" id="responseTime">-</div>
+                <div class="preview-desc">milliseconds</div>
+              </div>
+              
+            </div>
+            
+            <!-- 원시 데이터 표시 -->
+            <div class="raw-data-section">
+              <div class="raw-data-header">
+                <span>원시 데이터(JSON)</span>
+                <button class="copy-btn" onclick="copyRawData()">전체 복사</button>
+              </div>
+              <pre id="rawData" class="raw-data-display">데이터를 수집하면 여기에 표시됩니다..</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- 2단계: N/B 계산 섹션 -->
+    <div class="nb-calculation-section" id="nb-calculation" style="margin-top: 24px;">
+      <div class="section-header">
+        <h2>📊 2단계: N/B 계산</h2>
+        <button class="action-btn" onclick="calculateNB()" id="nbCalculateBtn" disabled>계산 시작</button>
+      </div>
+      
+      <div class="collection-grid row g-3 align-items-start">
+        <!-- 좌측: N/B 계산 플로우 -->
+        <div class="flowchart-panel col-12 col-lg-6">
+          <div class="panel-title">N/B 계산 플로우</div>
+          <div class="flowchart-container">
+            
+            <!-- N/B 단계 1: 데이터 준비 -->
+            <div class="flow-step" id="nb-flow-prepare">
+              <div class="flow-icon">📚</div>
+              <div class="flow-content">
+                <div class="flow-title">데이터 준비</div>
+                <div class="flow-desc">차트 데이터 전처리</div>
+                <div class="flow-time" id="nb-flow-prepare-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- N/B 단계 2: bitCalculation 호출 -->
+            <div class="flow-step" id="nb-flow-calculate">
+              <div class="flow-icon">🧮</div>
+              <div class="flow-content">
+                <div class="flow-title">bitCalculation 실행</div>
+                <div class="flow-desc">N/B 값 계산 중..</div>
+                <div class="flow-time" id="nb-flow-calculate-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- N/B 단계 3: API 전송 -->
+            <div class="flow-step" id="nb-flow-api">
+              <div class="flow-icon">📤</div>
+              <div class="flow-content">
+                <div class="flow-title">API 전송</div>
+                <div class="flow-desc">POST /api/nb/calculate</div>
+                <div class="flow-time" id="nb-flow-api-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- N/B 단계 4: NBVerse 저장 -->
+            <div class="flow-step" id="nb-flow-save">
+              <div class="flow-icon">💾</div>
+              <div class="flow-content">
+                <div class="flow-title">NBVerse 저장</div>
+                <div class="flow-desc">N/B 데이터베이스 저장</div>
+                <div class="flow-time" id="nb-flow-save-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- N/B 단계 5: 완료 -->
+            <div class="flow-step" id="nb-flow-complete">
+              <div class="flow-icon">✅</div>
+              <div class="flow-content">
+                <div class="flow-title">계산 완료</div>
+                <div class="flow-desc">결과 확정</div>
+                <div class="flow-time" id="nb-flow-complete-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- N/B 단계 6: 데이터 저장 -->
+            <div class="flow-step" id="nb-flow-store">
+              <div class="flow-icon">📚</div>
+              <div class="flow-content">
+                <div class="flow-title">데이터 저장</div>
+                <div class="flow-desc">data/nbverse 폴더에 저장</div>
+                <div class="flow-time" id="nb-flow-store-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+          </div>
+        </div>
+        
+        <!-- 우측: N/B 결과/시각화 로그/데이터 -->
+        <div class="col-12 col-lg-6 d-flex flex-column gap-3 right-column-scroll">
+          <div class="api-log-panel">
+            <div class="panel-title">N/B 계산 결과</div>
+            <div class="nb-result-container">
+              <div class="nb-result-card">
+                <div class="nb-result-label">N/B 값이용</div>
+                <div class="nb-result-value" id="nbValueResult">-</div>
+              </div>
+              <div class="nb-result-card">
+                <div class="nb-result-label">bit_max</div>
+                <div class="nb-result-value" id="nbMaxResult" style="color: #3fb950;">-</div>
+              </div>
+              <div class="nb-result-card">
+                <div class="nb-result-label">bit_min</div>
+                <div class="nb-result-value" id="nbMinResult" style="color: #f85149;">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-log-panel">
+            <div class="panel-title">N/B 범위 시각화</div>
+            <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 16px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11px; color: #8b949e;">
+                <span>MIN <span id="nbMinLabel">0.0</span></span>
+                <span>MAX <span id="nbMaxLabel">1.0</span></span>
+              </div>
+              <div style="width: 100%; height: 32px; background: linear-gradient(90deg, #f85149 0%, #ffc107 50%, #3fb950 100%); border-radius: 6px; position: relative;">
+                <div id="nbMarker" style="position: absolute; top: 50%; transform: translate(-50%, -50%); width: 4px; height: 40px; background: #fff; border: 2px solid #58a6ff; border-radius: 2px; box-shadow: 0 0 8px rgba(88,166,255,0.8); transition: left 0.3s ease; left: 50%;"></div>
+                <div id="nbMarkerLabel" style="position: absolute; top: -24px; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: #58a6ff; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; left: 50%;">N/B: -</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="api-log-panel">
+            <div class="panel-title">계산 로그</div>
+            <div class="api-log-container" id="nbLog" style="max-height: 200px;">
+              <div class="log-placeholder">N/B 계산을 시작하면 로그가 표시됩니다..</div>
+            </div>
+          </div>
+
+          <div class="api-log-panel">
+            <div class="panel-title">계산에 사용된 데이터(JSON)</div>
+            <div class="raw-data-section" style="margin-top: 0;">
+              <div class="raw-data-header">
+                <span>계산에 사용된 데이터(JSON)</span>
+                <button class="copy-btn" onclick="copyNBData()">전체 복사</button>
+              </div>
+              <pre id="nbRawData" class="raw-data-display">계산을 시작하면 데이터가 표시됩니다..</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- 3단계: BIT MAX 조회 섹션 -->
+    <div class="nb-calculation-section" id="bitmax-query" style="margin-top: 24px;">
+      <div class="section-header">
+        <h2>🔍 3단계: BIT MAX 조회</h2>
+        <button class="action-btn" onclick="fetchBitMaxData()" id="bitMaxFetchBtn" disabled>조회 시작</button>
+      </div>
+      
+      <div class="collection-grid row g-3 bitmax-grid">
+        <!-- 좌측: BIT MAX 조회 플로우 -->
+        <div class="flowchart-panel col-12 col-lg-6">
+          <div class="panel-title">BIT MAX 조회 플로우</div>
+          <div class="flowchart-container">
+            
+            <div class="flow-step" id="bitmax-flow-start">
+              <div class="flow-icon">🎯</div>
+              <div class="flow-content">
+                <div class="flow-title">시작</div>
+                <div class="flow-desc">bit_max 기반 조회 준비</div>
+                <div class="flow-time" id="bitmax-flow-start-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <div class="flow-step" id="bitmax-flow-api">
+              <div class="flow-icon">📡</div>
+              <div class="flow-content">
+                <div class="flow-title">API 조회</div>
+                <div class="flow-desc">GET /api/nb/&lt;bit_max&gt;</div>
+                <div class="flow-time" id="bitmax-flow-api-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <div class="flow-step" id="bitmax-flow-parse">
+              <div class="flow-icon">📊</div>
+              <div class="flow-content">
+                <div class="flow-title">데이터 파싱</div>
+                <div class="flow-desc">응답 데이터 처리</div>
+                <div class="flow-time" id="bitmax-flow-parse-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <div class="flow-step" id="bitmax-flow-complete">
+              <div class="flow-icon"></div>
+              <div class="flow-content">
+                <div class="flow-title">조회 완료</div>
+                <div class="flow-desc">AI 분석 대비준비</div>
+                <div class="flow-time" id="bitmax-flow-complete-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+            
+          </div>
+        </div>
+        
+        <!-- 우측: BIT MAX 조회 결과 -->
+        <div class="api-log-panel col-12 col-lg-6 bitmax-panel">
+          <div class="panel-title">BIT MAX 조회 결과</div>
+          
+          <div class="data-preview-grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="preview-card">
+              <div class="preview-label">요청 bit_max</div>
+              <div class="preview-value" id="bitMaxValueDisplay">-</div>
+              <div class="preview-desc">N/B 계산 결과 기반</div>
+            </div>
+            <div class="preview-card">
+              <div class="preview-label">응답 상태</div>
+              <div class="preview-value" id="bitMaxStatus">-</div>
+              <div class="preview-desc">매칭 여부 / 메시지</div>
+            </div>
+            <div class="preview-card">
+              <div class="preview-label">응답 시간</div>
+              <div class="preview-value" id="bitMaxResponseTime">-</div>
+              <div class="preview-desc">milliseconds</div>
+            </div>
+            <div class="preview-card">
+              <div class="preview-label">참고 N/B</div>
+              <div class="preview-value" id="bitMaxNBValue">-</div>
+              <div class="preview-desc">현재 N/B 값</div>
+            </div>
+          </div>
+          
+          <div style="margin-top: 12px;">
+            <div class="panel-title">BIT MAX 로그</div>
+            <div class="api-log-container" id="bitmaxLog" style="max-height: 160px;">
+              <div class="log-placeholder">조회가 시작하면 로그가 표시됩니다..</div>
+            </div>
+          </div>
+          
+          <div class="raw-data-section" style="margin-top: 12px;">
+            <div class="raw-data-header">
+              <span>BIT MAX 조회 응답 (JSON)</span>
+              <button class="copy-btn" onclick="copyBitMaxData()">전체 복사</button>
+            </div>
+            <pre id="bitMaxRawData" class="raw-data-display">조회 결과가 여기에 표시됩니다..</pre>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- 4단계: 카드 생성 섹션 -->
+      <div class="nb-calculation-section" id="card-generation" style="margin-top: 24px;">
+        <div class="section-header">
+          <h2>🎴 4단계: 카드 생성</h2>
+          <button class="action-btn" onclick="generateCard()" id="cardGenerateBtn" disabled>카드 생성</button>
+        </div>
+
+        <div class="collection-grid row g-3">
+          <!-- 좌측: 카드 생성 플로우 -->
+          <div class="flowchart-panel col-12 col-lg-6">
+            <div class="panel-title">카드 생성 플로우</div>
+            <div class="flowchart-container">
+              <div class="flow-step" id="card-flow-start">
+                <div class="flow-icon">🎯</div>
+                <div class="flow-content">
+                  <div class="flow-title">시작</div>
+                  <div class="flow-desc">카드 생성 준비</div>
+                  <div class="flow-time" id="card-flow-start-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-nb">
+                <div class="flow-icon">📚</div>
+                <div class="flow-content">
+                  <div class="flow-title">N/B 확인</div>
+                  <div class="flow-desc">가격·거래량·금액 기반 N/B 적용</div>
+                  <div class="flow-time" id="card-flow-nb-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-upbit">
+                <div class="flow-icon"></div>
+                <div class="flow-content">
+                  <div class="flow-title">UPBIT 조회</div>
+                  <div class="flow-desc">실시간 거래량 금액 보강</div>
+                  <div class="flow-time" id="card-flow-upbit-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-nb-volume">
+                <div class="flow-icon">📊</div>
+                <div class="flow-content">
+                  <div class="flow-title">N/B 거래량 계산</div>
+                  <div class="flow-desc">UPBIT 거래량 기반 N/B</div>
+                  <div class="flow-time" id="card-flow-nb-volume-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-nb-trade">
+                <div class="flow-icon">💸</div>
+                <div class="flow-content">
+                  <div class="flow-title">N/B 거래금액 계산</div>
+                  <div class="flow-desc">UPBIT 거래금액 기반 N/B</div>
+                  <div class="flow-time" id="card-flow-nb-trade-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-payload">
+                <div class="flow-icon">📦</div>
+                <div class="flow-content">
+                  <div class="flow-title">데이터 구성</div>
+                  <div class="flow-desc">가격NB/거래량 금액 페이로드</div>
+                  <div class="flow-time" id="card-flow-payload-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-api">
+                <div class="flow-icon">📡</div>
+                <div class="flow-content">
+                  <div class="flow-title">API 호출</div>
+                  <div class="flow-desc">POST /api/cards/chart-analysis/save</div>
+                  <div class="flow-time" id="card-flow-api-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-parse">
+                <div class="flow-icon">📊</div>
+                <div class="flow-content">
+                  <div class="flow-title">응답 파싱</div>
+                  <div class="flow-desc">card_id 및 결과 처리</div>
+                  <div class="flow-time" id="card-flow-parse-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              <div class="flow-arrow">↓</div>
+              <div class="flow-step" id="card-flow-complete">
+                <div class="flow-icon">✅</div>
+                <div class="flow-content">
+                  <div class="flow-title">완료</div>
+                  <div class="flow-desc">기본 분석 단계로 이동</div>
+                  <div class="flow-time" id="card-flow-complete-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측: 입력 프리뷰 + 상태 + 로그 -->
+          <div class="api-log-panel col-12 col-lg-6">
+            <div class="panel-title">입력 프리뷰</div>
+            <div class="data-preview-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="preview-subtitle">가격</div>
+              <div class="preview-card">
+                <div class="preview-label">현재 가격</div>
+                <div class="preview-value" id="cardPricePreview">-</div>
+                <div class="preview-desc">수집된 차트의 최신가</div>
+              </div>
+              <div class="preview-card">
+                <div class="preview-label">N/B 값</div>
+                <div class="preview-value" id="cardNbValuePreview">-</div>
+                <div class="preview-desc">계산된 nb_value</div>
+              </div>
+              <div class="preview-card">
+                <div class="preview-label">bit_max</div>
+                <div class="preview-value" id="cardNbMaxPreview">-</div>
+                <div class="preview-desc">bit_max 값 적용</div>
+              </div>
+              <div class="preview-card">
+                <div class="preview-label">bit_min</div>
+                <div class="preview-value" id="cardNbMinPreview">-</div>
+                <div class="preview-desc">bit_min 값 적용</div>
+              </div>
+
+              <div class="preview-divider"></div>
+
+              <div class="preview-subtitle">거래량</div>
+              <div class="preview-card">
+                <div class="preview-label">현재 거래량</div>
+                <div class="preview-value" id="cardVolumePreview">-</div>
+                <div class="preview-desc">가장 최근 봉의 거래량</div>
+              </div>
+              <div class="preview-card">
+                <div class="preview-label">거래량 BIT_MAX</div>
+                <div class="preview-value" id="cardVolumeBitMaxPreview">-</div>
+                <div class="preview-desc">거래량 기반 bit_max</div>
+              </div>
+              <div class="preview-card">
+                <div class="preview-label">거래량 BIT_MIN</div>
+                <div class="preview-value" id="cardVolumeBitMinPreview">-</div>
+                <div class="preview-desc">거래량 기반 bit_min</div>
+              </div>
+
+              <div class="preview-divider"></div>
+
+              <div class="preview-subtitle">거래 금액</div>
+              <div class="preview-card">
+                <div class="preview-label">현재 거래 금액</div>
+                <div class="preview-value" id="cardTradeAmountPreview">-</div>
+                <div class="preview-desc">가격×거래량 또는 응답 값</div>
+              </div>
+              <div class="preview-card">
+                <div class="preview-label">거래 금액 BIT_MAX</div>
+                <div class="preview-value" id="cardTradeAmountBitMaxPreview">-</div>
+                <div class="preview-desc">거래 금액 기반 bit_max</div>
+              </div>
+              <div class="preview-card">
+                <div class="preview-label">거래 금액 BIT_MIN</div>
+                <div class="preview-value" id="cardTradeAmountBitMinPreview">-</div>
+                <div class="preview-desc">거래 금액 기반 bit_min</div>
+              </div>
+            </div>
+            <div class="status" id="cardGenerateStatus" style="display:none;"></div>
+
+            <div class="panel-title" style="margin-top: 16px;">카드 생성 결과</div>
+            <div class="card-result" id="cardResultPanel" style="display:none;">
+              <div class="card-row">
+                <span class="card-label">카드 ID</span>
+                <span class="card-value" id="cardResultId">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">카드 키</span>
+                <span class="card-value" id="cardResultKey">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">가격</span>
+                <span class="card-value" id="cardResultPrice">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">거래량</span>
+                <span class="card-value" id="cardResultVolume">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">거래 금액</span>
+                <span class="card-value" id="cardResultTradeAmount">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">N/B 값</span>
+                <span class="card-value" id="cardResultNbValue">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">bit_max</span>
+                <span class="card-value" id="cardResultBitMax">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">bit_min</span>
+                <span class="card-value" id="cardResultBitMin">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">타임프레임</span>
+                <span class="card-value" id="cardResultTimeframe">-</span>
+              </div>
+              <div class="card-row">
+                <span class="card-label">생성 시각</span>
+                <span class="card-value" id="cardResultCreated">-</span>
+              </div>
+            </div>
+            <div class="api-log-container" id="cardLog" style="max-height: 200px;">
+              <div class="log-placeholder">카드 생성 버튼을 누르면 로그가 표시됩니다..</div>
+            </div>
+            <div class="raw-data-section" style="margin-top: 16px;">
+              <div class="raw-data-header">
+                <span>생성 응답 (JSON)</span>
+                <button class="copy-btn" onclick="copyCardData()">전체 복사</button>
+              </div>
+              <pre id="cardRawData" class="raw-data-display">카드를 생성하면 응답이 표시됩니다..</pre>
+            </div>
+
+            <div class="raw-data-section" style="margin-top: 16px;">
+              <div class="raw-data-header">
+                <span>거래량 배열 (JSON)</span>
+                <button class="copy-btn" onclick="copyVolumeData()">전체 복사</button>
+              </div>
+              <pre id="volumeRawData" class="raw-data-display">거래량 데이터를 수집하면 표시됩니다..</pre>
+            </div>
+
+            <div class="raw-data-section" style="margin-top: 16px;">
+              <div class="raw-data-header">
+                <span>거래금액 배열 (JSON)</span>
+                <button class="copy-btn" onclick="copyTradeAmountData()">전체 복사</button>
+              </div>
+              <pre id="tradeAmountRawData" class="raw-data-display">거래금액 데이터를 수집하면 표시됩니다..</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- 카드 생성 결과 표시 (전체 프리뷰) -->
+        <div class="collection-grid" style="margin-top: 24px;">
+          <div id="cardResultSection" style="display:none; padding: 16px; background: rgba(88, 166, 255, 0.1); border-radius: 8px; border: 1px solid rgba(88, 166, 255, 0.3);">
+            <div style="font-size: 16px; font-weight: 600; color: #58a6ff; margin-bottom: 16px;">카드 생성 결과</div>
+            <div class="card-result" id="cardResultFlowPanel">
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">카드 ID</span>
+                <span style="color: #58a6ff; font-weight: 600;" id="cardResultFlowId">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">카드 키</span>
+                <span style="font-family: monospace; color: #79c0ff;" id="cardResultFlowKey">-</span>
+              </div>
+              
+              <!-- 가격 기반 N/B -->
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(88,166,255,0.3); font-size: 13px; font-weight: 600; color: #58a6ff;">N/B 가격 기반</div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">가격</span>
+                <span style="color: #3fb950; font-weight: 600;" id="cardResultFlowPrice">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">N/B 값</span>
+                <span style="color: #d29922; font-weight: 600;" id="cardResultFlowNbValue">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">bit_max / bit_min</span>
+                <span style="color: #a371f7; font-weight: 600;" id="cardResultFlowBits">-</span>
+              </div>
+              
+              <!-- 거래량 기반 N/B -->
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(88,166,255,0.3); font-size: 13px; font-weight: 600; color: #58a6ff;">N/B 거래량 기반</div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">거래량</span>
+                <span style="color: #3fb950; font-weight: 600;" id="cardResultFlowVolume">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">N/B 값</span>
+                <span style="color: #d29922; font-weight: 600;" id="cardResultFlowVolumeNb">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">bit_max / bit_min</span>
+                <span style="color: #a371f7; font-weight: 600;" id="cardResultFlowVolumeBits">-</span>
+              </div>
+              
+              <!-- 거래금액 기반 N/B -->
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(88,166,255,0.3); font-size: 13px; font-weight: 600; color: #58a6ff;">N/B 거래금액 기반</div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">거래금액</span>
+                <span style="color: #3fb950; font-weight: 600;" id="cardResultFlowTradeAmount">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">N/B 값</span>
+                <span style="color: #d29922; font-weight: 600;" id="cardResultFlowTradeNb">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="color: #8b949e;">bit_max / bit_min</span>
+                <span style="color: #a371f7; font-weight: 600;" id="cardResultFlowTradeBits">-</span>
+              </div>
+              
+              <!-- 기본 정보 -->
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(88,166,255,0.3);">
+                <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                  <span style="color: #8b949e;">타임프레임</span>
+                  <span style="color: #e6edf3;" id="cardResultFlowTimeframe">-</span>
+                </div>
+                <div class="card-row" style="display: grid; grid-template-columns: 200px 1fr; padding: 8px 0;">
+                  <span style="color: #8b949e;">생성 시각</span>
+                  <span style="color: #e6edf3; font-size: 12px;" id="cardResultFlowCreated">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5단계: 기본 분석 섹션 -->
+    <div class="basic-analysis-section" id="basic-analysis" style="margin-top: 24px;">
+      <div class="section-header">
+        <h2>📊 5단계: 기본 분석</h2>
+        <button class="action-btn" id="basicAnalysisBtn" onclick="performBasicAnalysis()" disabled>분석 시작</button>
+      </div>
+
+      <!-- 생성된 카드 표시 -->
+      <div style="margin-bottom: 24px; padding: 24px; background: linear-gradient(135deg, rgba(88, 166, 255, 0.1) 0%, rgba(163, 113, 247, 0.1) 100%); border-radius: 12px; border: 2px solid rgba(88, 166, 255, 0.3);">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+          <div style="font-size: 48px;">🎴</div>
+          <div style="flex: 1;">
+            <div style="font-size: 18px; font-weight: 700; color: #58a6ff; margin-bottom: 4px;">생성된 카드</div>
+            <div style="font-size: 12px; color: #8b949e; font-family: monospace;" id="analysisCardId">-</div>
+          </div>
+          <div style="padding: 8px 16px; background: rgba(63, 185, 80, 0.2); border-radius: 6px; border: 1px solid rgba(63, 185, 80, 0.5);">
+            <div style="font-size: 11px; color: #8b949e; margin-bottom: 2px;">상태</div>
+            <div style="font-size: 14px; font-weight: 600; color: #3fb950;">생성 완료</div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <!-- 가격 기반 정보 -->
+          <div class="col-12 col-lg-4">
+            <div style="padding: 16px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; height: 100%;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span style="font-size: 20px;"></span>
+                <span style="font-size: 14px; font-weight: 600; color: #58a6ff;">가격 기반</span>
+              </div>
+              <div style="display: grid; gap: 8px;">
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">현재 가격</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #3fb950;" id="analysisPrice">-</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">N/B 값</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #d29922; font-family: monospace;" id="analysisNbValue">-</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">bit_max / bit_min</div>
+                  <div style="font-size: 12px; font-weight: 600; color: #a371f7; font-family: monospace;" id="analysisBits">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 거래량 기반 정보 -->
+          <div class="col-12 col-lg-4">
+            <div style="padding: 16px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; height: 100%;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span style="font-size: 20px;">📊</span>
+                <span style="font-size: 14px; font-weight: 600; color: #58a6ff;">거래량 기반</span>
+              </div>
+              <div style="display: grid; gap: 8px;">
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">거래량</div>
+                  <div style="font-size: 16px; font-weight: 700; color: #3fb950;" id="analysisVolume">-</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">N/B 값</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #d29922; font-family: monospace;" id="analysisVolumeNb">-</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">bit_max / bit_min</div>
+                  <div style="font-size: 12px; font-weight: 600; color: #a371f7; font-family: monospace;" id="analysisVolumeBits">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 거래금액 기반 정보 -->
+          <div class="col-12 col-lg-4">
+            <div style="padding: 16px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; height: 100%;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span style="font-size: 20px;">💸</span>
+                <span style="font-size: 14px; font-weight: 600; color: #58a6ff;">거래금액 기반</span>
+              </div>
+              <div style="display: grid; gap: 8px;">
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">거래금액</div>
+                  <div style="font-size: 16px; font-weight: 700; color: #3fb950;" id="analysisTradeAmount">-</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">N/B 값</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #d29922; font-family: monospace;" id="analysisTradeNb">-</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">bit_max / bit_min</div>
+                  <div style="font-size: 12px; font-weight: 600; color: #a371f7; font-family: monospace;" id="analysisTradeBits">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+          <div style="padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 6px;">
+            <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">타임프레임</div>
+            <div style="font-size: 14px; font-weight: 600; color: #e6edf3;" id="analysisTimeframe">-</div>
+          </div>
+          <div style="padding: 12px; background: rgba(0, 0, 0, 0.3); border-radius: 6px;">
+            <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">생성 시각</div>
+            <div style="font-size: 12px; font-weight: 600; color: #e6edf3;" id="analysisCreatedTime">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 기본 분석 결과 -->
+      <div class="collection-grid row g-3">
+        <!-- 좌측: 분석 플로우 -->
+          <div class="flowchart-panel col-12 col-lg-6">
+            <div class="panel-title">기본 분석 플로우</div>
+            <div class="flowchart-container">
+              <div class="flow-step" id="analysis-flow-start">
+                <div class="flow-icon">🎯</div>
+                <div class="flow-content">
+                  <div class="flow-title">시작</div>
+                  <div class="flow-desc">기본 분석 준비</div>
+                  <div class="flow-time" id="analysis-flow-start-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              
+              <div class="flow-arrow">↓</div>
+              
+              <div class="flow-step" id="analysis-flow-card">
+                <div class="flow-icon">📚</div>
+                <div class="flow-content">
+                  <div class="flow-title">카드 준비</div>
+                  <div class="flow-desc">카드 타임라인</div>
+                  <div class="flow-time" id="analysis-flow-card-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              
+              <div class="flow-arrow">↓</div>
+              
+              <div class="flow-step" id="analysis-flow-save">
+                <div class="flow-icon">💾</div>
+                <div class="flow-content">
+                  <div class="flow-title">저장</div>
+                  <div class="flow-desc">분석 결과 저장</div>
+                  <div class="flow-time" id="analysis-flow-save-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              
+              <div class="flow-arrow">↓</div>
+              
+              <div class="flow-step" id="analysis-flow-fetch">
+                <div class="flow-icon">📚</div>
+                <div class="flow-content">
+                  <div class="flow-title">조회</div>
+                  <div class="flow-desc">저장결과 조회</div>
+                  <div class="flow-time" id="analysis-flow-fetch-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+              
+              <div class="flow-arrow">↓</div>
+              
+              <div class="flow-step" id="analysis-flow-complete">
+                <div class="flow-icon">✅</div>
+                <div class="flow-content">
+                  <div class="flow-title">완료</div>
+                  <div class="flow-desc">AI 학습 단계이동</div>
+                  <div class="flow-time" id="analysis-flow-complete-time"></div>
+                </div>
+                <div class="flow-status">⏳</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측: 카드 전체 모습 + 분석 결과 + 로그 -->
+          <div class="api-log-panel col-12 col-lg-6">
+            <div class="panel-title">생성카드</div>
+            <div style="padding: 16px; background: rgba(0,0,0,0.25); border-radius: 8px; margin-bottom: 12px;">
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">카드 ID</span>
+                <span style="color: #58a6ff; font-weight: 600; font-size: 12px;" id="analysisCardIdFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">카드 유형</span>
+                <span style="color: #e6edf3; font-weight: 600;" id="analysisDuplicateTagFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">가격</span>
+                <span style="color: #3fb950; font-weight: 700;" id="analysisPriceFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">N/B 값</span>
+                <span style="color: #d29922; font-weight: 700; font-family: monospace;" id="analysisNbValueFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">bit_max / bit_min</span>
+                <span style="color: #a371f7; font-weight: 600; font-family: monospace;" id="analysisBitsFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">거래량</span>
+                <span style="color: #3fb950; font-weight: 700;" id="analysisVolumeFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">거래량 bit_max/min</span>
+                <span style="color: #a371f7; font-weight: 600; font-family: monospace;" id="analysisVolumeBitsFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">거래금액</span>
+                <span style="color: #3fb950; font-weight: 700;" id="analysisTradeAmountFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span style="color: #8b949e;">거래금액 bit_max/min</span>
+                <span style="color: #a371f7; font-weight: 600; font-family: monospace;" id="analysisTradeBitsFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0;">
+                <span style="color: #8b949e;">타임프레임</span>
+                <span style="color: #e6edf3;" id="analysisTimeframeFull">-</span>
+              </div>
+              <div class="card-row" style="display: grid; grid-template-columns: 160px 1fr; padding: 6px 0;">
+                <span style="color: #8b949e;">생성 시각</span>
+                <span style="color: #e6edf3; font-size: 12px;" id="analysisCreatedTimeFull">-</span>
+              </div>
+            </div>
+
+            <div class="panel-title">기본 분석 결과</div>
+          <div id="basicAnalysisResult" style="padding: 20px; background: rgba(88, 166, 255, 0.05); border-radius: 8px; min-height: 250px;">
+            <div style="color: #8b949e; text-align: center; padding: 60px 0;">
+              <div style="font-size: 48px; margin-bottom: 16px;"></div>
+              <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">분석 준비중</div>
+              <div style="font-size: 14px;">위 "분석 시작" 버튼을 눌러주세요</div>
+            </div>
+          </div>
+          
+          <div class="status info" id="basicAnalysisStatus" style="display: none; margin-top: 16px;">분석 진행중..</div>
+          
+          <div class="api-log-container" id="basicAnalysisLog" style="max-height: 200px; margin-top: 16px;">
+            <div class="log-placeholder">분석을 시작하면 로그가 표시됩니다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  </div>
+  
+  <!-- 6단계: AI 학습 섹션 -->
+  <div class="data-collection-section" id="ai-training" style="margin-top: 24px;">
+    <div class="section-header">
+      <h2>🤖 6단계: AI 학습</h2>
+      <button class="action-btn" id="aiTrainBtn" onclick="startAiTraining()" disabled>준비되지 않음</button>
+    </div>
+
+    <div class="collection-grid row g-3">
+      <div class="flowchart-panel col-12 col-lg-6">
+        <div class="panel-title">AI 학습 플로우</div>
+        <div class="flowchart-container">
+          <div class="flow-step" id="ai-train-flow-start">
+            <div class="flow-icon">🎯</div>
+            <div class="flow-content">
+              <div class="flow-title">학습 시작</div>
+              <div class="flow-desc">하이퍼파라미터 설정</div>
+              <div class="flow-time" id="ai-train-flow-start-time"></div>
+            </div>
+            <div class="flow-status">⏳</div>
+          </div>
+
+          <div class="flow-arrow">↓</div>
+
+          <div class="flow-step" id="ai-train-flow-fetch">
+            <div class="flow-icon">📚</div>
+            <div class="flow-content">
+              <div class="flow-title">max N/B 조회</div>
+              <div class="flow-desc">논문카드 선택</div>
+              <div class="flow-time" id="ai-train-flow-fetch-time"></div>
+            </div>
+            <div class="flow-status">⏳</div>
+          </div>
+
+          <div class="flow-arrow">↓</div>
+
+          <div class="flow-step" id="ai-train-flow-train">
+            <div class="flow-icon">🧠</div>
+            <div class="flow-content">
+              <div class="flow-title">모델 학습</div>
+              <div class="flow-desc">서버에서 학습 수행</div>
+              <div class="flow-time" id="ai-train-flow-train-time"></div>
+            </div>
+            <div class="flow-status">⏳</div>
+          </div>
+
+          <div class="flow-arrow">↓</div>
+
+          <div class="flow-step" id="ai-train-flow-complete">
+            <div class="flow-icon">✅</div>
+            <div class="flow-content">
+              <div class="flow-title">학습 완료</div>
+              <div class="flow-desc">AI 분석 단계이동</div>
+              <div class="flow-time" id="ai-train-flow-complete-time"></div>
+            </div>
+            <div class="flow-status">⏳</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="api-log-panel col-12 col-lg-6">
+        <div class="panel-title">학습 대상카드</div>
+        <div style="padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px;">
+          <div style="display: grid; grid-template-columns: 140px 1fr; gap: 8px; font-size: 13px; color: #c9d1d9;">
+            <div class="training-label">카드 ID</div><div id="aiTrainCardId">-</div>
+            <div class="training-label">카드 유형</div><div id="aiTrainCardType">-</div>
+            <div class="training-label">가�</div><div id="aiTrainPrice">-</div>
+            <div class="training-label">N/B 값</div><div id="aiTrainNb">-</div>
+            <div class="training-label">bit_max / bit_min</div><div id="aiTrainBits">-</div>
+            <div class="training-label">거래량</div><div id="aiTrainVolume">-</div>
+            <div class="training-label">거래bit_max/min</div><div id="aiTrainVolumeBits">-</div>
+            <div class="training-label">거래금액</div><div id="aiTrainTradeAmount">-</div>
+            <div class="training-label">거래금액 bit_max/min</div><div id="aiTrainTradeBits">-</div>
+            <div class="training-label">타임프레임</div><div id="aiTrainTimeframe">-</div>
+            <div class="training-label">생성 시각</div><div id="aiTrainCreated">-</div>
+          </div>
+        </div>
+
+        <div class="panel-title">기본 분석 결과 (복사)</div>
+        <div id="aiTrainBasicMirror" style="padding: 12px; background: rgba(88, 166, 255, 0.05); border: 1px solid rgba(88, 166, 255, 0.2); border-radius: 8px; min-height: 120px; color: #e6edf3; font-size: 13px; line-height: 1.6;">
+          <div style="color: #8b949e;">기본 분석 결과가 대기중입니다</div>
+        </div>
+
+        <div class="panel-title" style="margin-top: 12px;">학습 결과 (가격기반 max)</div>
+        <div id="aiTrainOutcome" style="padding: 12px; background: rgba(63, 185, 80, 0.08); border: 1px solid rgba(63, 185, 80, 0.25); border-radius: 8px; min-height: 120px; color: #e6edf3; font-size: 13px; line-height: 1.6;">
+          <div style="color: #8b949e;">가격기반 bit_max 학습 결과는 계산되면 자동표시됩니다</div>
+        </div>
+
+        <div class="panel-title">AI 학습 로그</div>
+        <div class="api-log-container" id="aiTrainLog" style="max-height: 220px;">
+          <div class="log-placeholder">AI 학습 트레이닝중입니다...</div>
+        </div>
+        <div class="status info" style="margin-top: 12px;">
+          학습 기능이성이되는역에서 진행 상태를인습입니다.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7단계: AI 분석 섹션 -->
+  <div class="data-collection-section" id="ai-analysis">
+    <div class="collection-grid row g-3">
+      <!-- 좌측: 분석 플로우-->
+      <div class="flowchart-panel col-12 col-lg-6">
+        <div class="panel-title">AI 분석 플로우</div>
+        <div class="flowchart-container">
+          <div class="flow-step" id="ai-analysis-flow-start">
+            <div class="flow-icon">🎯</div>
+            <div class="flow-content">
+              <div class="flow-title">분석 시작</div>
+              <div class="flow-desc">AI 분석 준비</div>
+              <div class="flow-time" id="ai-analysis-flow-start-time"></div>
+            </div>
+            <div class="flow-status">⏳</div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" id="ai-analysis-flow-card">
+            <div class="flow-icon">📚</div>
+            <div class="flow-content">
+              <div class="flow-title">카드 검증</div>
+              <div class="flow-desc">분석 대상카드 먼저 확인</div>
+              <div class="flow-time" id="ai-analysis-flow-card-time"></div>
+            </div>
+            <div class="flow-status">⏳</div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" id="ai-analysis-flow-predict">
+            <div class="flow-icon">🧠</div>
+            <div class="flow-content">
+              <div class="flow-title">AI 예측</div>
+              <div class="flow-desc">서버 예측/순위중</div>
+              <div class="flow-time" id="ai-analysis-flow-predict-time"></div>
+            </div>
+            <div class="flow-status">⏳</div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" id="ai-analysis-flow-complete">
+            <div class="flow-icon"></div>
+            <div class="flow-content">
+              <div class="flow-title">분석 완료</div>
+              <div class="flow-desc">결과 표시 완료</div>
+              <div class="flow-time" id="ai-analysis-flow-complete-time"></div>
+            </div>
+            <div class="flow-status"></div>
+          </div>
+        </div>
+        <div class="panel-title" style="margin-top: 16px;">AI 분석 준비상태</div>
+        <!-- (현전 위치 내문서 예측으로 동작) -->
+      </div>
+      <!-- 우측: 분석 카드 정보 -->
+      <div class="api-log-panel col-12 col-lg-6">
+        <div class="panel-title">분석대상 카드정보</div>
+        <div class="panel-title" style="margin-top: 16px;">AI 분석 준��태</div>
+        <div class="status info" style="margin-bottom: 12px;">AI 학습완료되면 자동으로 분석 단계가 작성됩니다.</div>
+        <div id="aiPredictionCardList" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="color:#8b949e;">AI 예측 카드가 자동적 표시됩니다 (검사까지 진행중)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8단계: 트레이딩 카드 섹션 -->
+  <div class="data-collection-section" id="trading-cards" style="margin-top: 24px;">
+    <div class="section-header">
+      <h2>📈 8단계: 트레이딩 카드</h2>
+    </div>
+    
+    <div class="collection-grid row g-3 align-items-start">
+      <!-- 좌측: 플로우 -->
+      <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+        <div class="flowchart-panel">
+          <div class="panel-title">트레이딩 플로우</div>
+          <div class="flowchart-container">
+            <div class="flow-step" id="trade-flow-start">
+              <div class="flow-icon">🎯</div>
+              <div class="flow-content">
+                <div class="flow-title">시작</div>
+                <div class="flow-desc">가격 차트 준비</div>
+                <div class="flow-time" id="trade-flow-start-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step" id="trade-flow-import">
+              <div class="flow-icon">📥</div>
+              <div class="flow-content">
+                <div class="flow-title">예측 카드 연동</div>
+                <div class="flow-desc">7단계 예측 카드 가져오기</div>
+                <div class="flow-time" id="trade-flow-import-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step" id="trade-flow-chart">
+              <div class="flow-icon">📈</div>
+              <div class="flow-content">
+                <div class="flow-title">차트 드로잉</div>
+                <div class="flow-desc">예측값 표시 차트</div>
+                <div class="flow-time" id="trade-flow-chart-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step" id="trade-flow-generate">
+              <div class="flow-icon">🃏</div>
+              <div class="flow-content">
+                <div class="flow-title">카드 생성</div>
+                <div class="flow-desc">현재가 기반 max 카드</div>
+                <div class="flow-time" id="trade-flow-generate-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step" id="trade-flow-verify">
+              <div class="flow-icon">✅</div>
+              <div class="flow-content">
+                <div class="flow-title">카드 검증</div>
+                <div class="flow-desc">가격 검증 및 확인</div>
+                <div class="flow-time" id="trade-flow-verify-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step" id="trade-flow-save">
+              <div class="flow-icon">💾</div>
+              <div class="flow-content">
+                <div class="flow-title">카드 저장</div>
+                <div class="flow-desc">검증완료 카드 저장</div>
+                <div class="flow-time" id="trade-flow-save-time"></div>
+              </div>
+              <div class="flow-status">⏳</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우측: Upbit 차트 + 카드 리스트-->
+      <div class="col-12 col-lg-6 d-flex flex-column gap-3 right-column-scroll">
+        <div class="api-log-panel">
+          <div class="panel-title">Upbit 차트 (KRW-BTC)</div>
+          <div id="upbitChart" style="background: #010409; border-radius: 8px; height: 400px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); position: relative;">
+            <canvas id="upbitChartCanvas" style="width: 100%; height: 100%;"></canvas>
+            <div id="upbitChartPlaceholder" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#8b949e; font-size:14px;">
+              <div style="text-align:center;">
+                <div style="margin-bottom:8px;">📊 차트 로딩 중...</div>
+                <div style="font-size:12px;">Upbit API 차트 영역</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 12px; color: #8b949e; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>현재 가격: <span id="currentPriceDisplay" style="color: #58a6ff; font-weight: 700;">-</span></div>
+            <div>가격대: <span id="priceBandDisplay" style="color: #c9d1d9; font-weight: 700;">-</span></div>
+            <div>종가: <span id="closePriceDisplay" style="color: #3fb950; font-weight: 700;">-</span></div>
+            <div>저가: <span id="lowPriceDisplay" style="color: #f85149; font-weight: 700;">-</span></div>
+          </div>
+          <div id="predictionCardInfo" style="margin-top: 8px; padding: 10px; background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.35); border-radius: 6px; font-size: 12px; color: #c9d1d9;">
+            <div style="font-weight: 700; color: #f5a623; margin-bottom: 6px;">7단계 예측 카드 (차트 표시)</div>
+            <div id="predictionCardSummary" style="color: #8b949e;">예측 카드가 준비중입니다.</div>
+          </div>
+        </div>
+
+        <div class="api-log-panel">
+          <div class="panel-title">예측 카드 (7단계)</div>
+          <div id="predictionCardListStep8" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="color: #8b949e; text-align: center; padding: 16px;">예측 카드가 준비중입니다.</div>
+          </div>
+        </div>
+
+        <div class="api-log-panel">
+          <div class="panel-title">매매카드 (가격기반 max)</div>
+          <div id="tradingCardList" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="color: #8b949e; text-align: center; padding: 20px;">
+              생성카드가 준비중입니다. 분석 완료 이후 생성되니
+            </div>
+          </div>
+        </div>
+        
+        <div class="api-log-panel">
+          <div class="panel-title">보유 카드 (매도 가</div>
+          <div id="ownedCardList" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="color: #8b949e; text-align: center; padding: 20px;">
+              매수카드가 준비중입니다.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9단계: 플로우리셋 섹션 -->
+  <div class="data-collection-section" id="full-reset" style="margin-top: 24px;">
+    <div class="section-header">
+      <h2>🔄 9단계: 플로우리셋</h2>
+      <div style="color:#8b949e; font-size:13px; margin-top:4px;">플로우상태를 초기화하여 모든이카드를 초기화합니다</div>
+    </div>
+
+    <div class="collection-grid row g-3 align-items-start">
+      <!-- 좌측: 플로우차트 -->
+      <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+        <div class="flowchart-panel">
+          <div class="panel-title">플로우리셋 단계</div>
+          <div class="flowchart-container">
+            <div class="flow-step" id="reset-flow-start">
+              <div class="flow-icon"></div>
+              <div class="flow-content">
+                <div class="flow-title">시작</div>
+                <div class="flow-desc">리셋 프로세스 시작</div>
+                <div class="flow-time" id="reset-flow-start-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step" id="reset-flow-progress">
+              <div class="flow-icon"></div>
+              <div class="flow-content">
+                <div class="flow-title">진행 단계 리셋</div>
+                <div class="flow-desc">step0~step9 상태 초기화</div>
+                <div class="flow-time" id="reset-flow-progress-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step" id="reset-flow-data">
+              <div class="flow-icon"></div>
+              <div class="flow-content">
+                <div class="flow-title">데이터 플로우 리셋</div>
+                <div class="flow-desc">1단계 플로우 초기화</div>
+                <div class="flow-time" id="reset-flow-data-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step" id="reset-flow-card">
+              <div class="flow-icon"></div>
+              <div class="flow-content">
+                <div class="flow-title">카드 플로우리셋</div>
+                <div class="flow-desc">2-5단계 플로우 초기화</div>
+                <div class="flow-time" id="reset-flow-card-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step" id="reset-flow-ai">
+              <div class="flow-icon"></div>
+              <div class="flow-content">
+                <div class="flow-title">AI/트레이딩 플로우리셋</div>
+                <div class="flow-desc">6-8단계 플로우 초기화</div>
+                <div class="flow-time" id="reset-flow-ai-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step" id="reset-flow-restart">
+              <div class="flow-icon">️</div>
+              <div class="flow-content">
+                <div class="flow-title">자동 재시작</div>
+                <div class="flow-desc">1단계 데이터 수집 수행</div>
+                <div class="flow-time" id="reset-flow-restart-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+            <div class="flow-arrow"></div>
+            <div class="flow-step" id="reset-flow-complete">
+              <div class="flow-icon"></div>
+              <div class="flow-content">
+                <div class="flow-title">완료</div>
+                <div class="flow-desc">리셋 ��시완료</div>
+                <div class="flow-time" id="reset-flow-complete-time"></div>
+              </div>
+              <div class="flow-status"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우측: 리셋 정보 -->
+      <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+        <div class="panel" style="padding: 16px;">
+          <div style="font-weight:700; font-size:14px; color:#e6edf3; margin-bottom:8px;">리셋 기능 (플로우만)</div>
+          <ul style="margin:0; padding-left:16px; color:#8b949e; line-height:1.6; font-size:13px;">
+            <li>진행 상태 상태 초기화(0 완료, 1 진행, 나머지 대기)</li>
+            <li>플로우UI 상태 초기화(카드/AI/트레이딩)</li>
+            <li>카드/차트/로그 초기화</li>
+          </ul>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button class="primary-btn" style="flex:1;" onclick="runFlowReset()">전체 플로우리셋 수행</button>
+          </div>
+        </div>
+
+        <div class="panel" style="padding: 16px;">
+          <div style="font-weight:700; font-size:14px; color:#e6edf3; margin-bottom:8px;">주의</div>
+          <div style="color:#f85149; font-size:13px; line-height:1.5;">플로우상태를 초기화하여 모든이카드, 로그를 초기화합니다</div>
+        </div>
+      </div>
+    </div>
+  </div>

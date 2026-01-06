@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- HTML만 no-cache, CSS/JS는 브라우저 캐시 허용 (속도 개선) -->
+  <meta http-equiv="Cache-Control" content="max-age=0" />
+  <title>차트 분석 시스템</title>
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css'>
+  <script src='https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js' crossorigin='anonymous'></script>
+  <!-- N/B 계산 라이브러리 -->
+  <script src="js/bitCalculation.v.0.2.js?v=dev"></script>
+  <!-- 모듈 시스템 -->
+  <script type="module" src="js/modules/config.js?v=dev"></script>
+  <script type="module" src="js/modules/chart-manager.js?v=dev"></script>
+  <script type="module" src="js/modules/nbverse-client.js?v=dev"></script>
+  <script type="module" src="js/modules/storage-manager.js?v=dev"></script>
+  <script type="module" src="js/modules/ai-prediction.js?v=dev"></script>
+  <script type="module" src="js/modules/card-system.js?v=dev"></script>
+  <link rel="stylesheet" href="./css/chart-analysis.css?v=dev">
+</head>
+<body>
+  <div class="container-fluid">
+    <!-- 진행 단계 추적 -->
+    <div id="progressTracker" class="progress-tracker-container"></div>
+    
+    <div class="main-content">
+      <!-- 좌측 차트 영역 -->
+      <div class="chart-container">
+      <div class="chart-header">
+        <div class="chart-title">KRW-BTC 차트</div>
+        <div class="chart-controls">
+          <select id="timeframe">
+            <option value="minute1">1분</option>
+            <option value="minute3">3분</option>
+            <option value="minute5">5분</option>
+            <option value="minute10" selected>10분</option>
+            <option value="minute15">15분</option>
+            <option value="minute30">30분</option>
+            <option value="minute60">1시간</option>
+            <option value="day">1일</option>
+          </select>
+          <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12px; color: #9aa0a6;">
+            <input type="checkbox" id="cycleMode" style="cursor: pointer;">
+            <span>자동 순회</span>
+          </label>
+          <input type="number" id="cycleInterval" value="30" min="10" max="300" step="10" 
+                 style="width: 60px; padding: 4px 6px; background: #2b3139; color: #e6eefc; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-size: 12px;"
+                 title="순회 간격 (초)">
+          <span style="font-size: 12px; color: #9aa0a6;">초</span>
+          <button id="btnReset">초기화</button>
+        </div>
+      </div>
+      <div id="tvChart"></div>
+    </div>
+    
+    <!-- 우측 분석 영역 -->
+    <div class="analysis-container">
+      <!-- 자산 정보 (우측 맨 위) -->
+      <div class="balance-section">
+        <div class="balance-header">
+          <div class="balance-title">
+            💰 내 자산
+          </div>
+          <button class="balance-refresh-btn" id="balanceRefreshBtn" onclick="updateBalance(true)">🔄</button>
+        </div>
+        <div id="balanceContent">
+          <div class="balance-loading">자산 정보를 불러오는 중...</div>
+        </div>
+      </div>
+      
+      <div class="analysis-header">
+        <span class="status-indicator active"></span>
+        차트 분석
+      </div>
+      
+      <!-- N/B 데이타 표시 -->
+      <div class="analysis-section">
+        <div class="section-title">N/B 데이타</div>
+        <div class="info-card">
+          <div id="nbDataSection" style="transition: opacity 0.3s ease;">
+          <div class="info-row">
+            <span class="info-label">분봉</span>
+            <span class="info-value" id="nbInterval" style="color: #4285f4; font-weight: bold;">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">N/B 데이타</span>
+            <span class="info-value" id="nbValue" style="color: #00d1ff; font-weight: bold;">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">N/B MAX</span>
+            <span class="info-value" id="nbMax" style="color: #0ecb81; font-weight: bold;">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">N/B MIN</span>
+            <span class="info-value" id="nbMin" style="color: #f6465d; font-weight: bold;">-</span>
+          </div>
+          <!-- N/B 프로그레스바 -->
+          <div class="info-row" style="flex-direction: column; align-items: flex-start; gap:8px; margin: 12px 0;">
+            <span class="info-label" style="margin-bottom: 4px;">N/B 범위 시각화</span>
+            <div style="width: 100%; background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; position: relative;">
+              <!-- MIN ~ MAX 배경 바 -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 10px; color: #9aa0a6;">
+                <span>MIN <span id="nbMinLabel" style="color: #f6465d; font-weight: 600;">0.0</span></span>
+                <span>MAX <span id="nbMaxLabel" style="color: #0ecb81; font-weight: 600;">1.0</span></span>
+              </div>
+              <!-- 프로그레스바 컨테이너 -->
+              <div style="width: 100%; height: 32px; background: linear-gradient(90deg, #f6465d 0%, #ffc107 50%, #0ecb81 100%); border-radius: 6px; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);">
+                <!-- 현재 N/B 값 마커 -->
+                <div id="nbValueMarker" style="position: absolute; top: 50%; transform: translate(-50%, -50%); width: 4px; height: 40px; background: #fff; border: 2px solid #00d1ff; border-radius: 2px; box-shadow: 0 0 8px rgba(0,209,255,0.8); transition: left 0.3s ease;"></div>
+                <!-- N/B 값 라벨 -->
+                <div id="nbValueLabel" style="position: absolute; top: -24px; transform: translateX(-50%); font-size: 11px; font-weight: 700; color: #00d1ff; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; white-space: nowrap;">N/B: -</div>
+              </div>
+              <!-- MIN/MAX 범위 표시 -->
+              <div id="nbRangeBar" style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 8px; position: relative;">
+                <div id="nbRangeFill" style="position: absolute; height: 100%; background: linear-gradient(90deg, rgba(246,70,93,0.3), rgba(14,203,129,0.3)); border-radius: 4px; transition: left 0.3s ease, width 0.3s ease;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-label">현재 가격</span>
+            <span class="info-value" id="nbCurrentPrice" style="color: #ffd166; font-weight: bold;">-</span>
+          </div>
+          <div class="info-row" style="flex-direction: column; align-items: flex-start; gap:6px;">
+            <span class="info-label">사용된 차트 데이터</span>
+            <pre id="nbUsedData" style="max-height:140px; overflow:auto; width:100%; background:#0e1113; color:#cfeffd; padding:8px; border-radius:6px; font-size:11px; margin:6px 0;">-</pre>
+          </div>
+          </div><!-- nbDataSection 종료 -->
+          <!-- N/B 처리 프로그레스바 (항상 하단에 고정 표시) -->
+          <div id="nbProgressContainer" style="display: block; margin-top: 12px;">
+            <div style="width: 100%; height: 24px; background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; position: relative;">
+              <div id="nbProgressFill" style="height: 100%; background: linear-gradient(90deg, #4285f4, #0ecb81); transition: width 0.3s ease; border-radius: 12px; width: 0%;"></div>
+            </div>
+            <div id="nbProgressText" style="font-size: 11px; color: #9aa0a6; text-align: center; margin-top: 4px;">N/B 데이터 대기 중...</div>
+          </div>
+          <!-- BIT MAX / BIT MIN 항목 제거됨 -->
+        </div>
+      </div>
+      
+      <!-- AI 학습 상태 -->
+      <div class="analysis-section">
+        <div class="section-title">🤖 AI 학습 상태</div>
+        <div class="info-card">
+          <div class="info-row">
+            <span class="info-label">모델 상태</span>
+            <span class="info-value" id="aiModelStatus" style="color: #ffc107;">미학습</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">레벨</span>
+            <span class="info-value" id="aiLevel" style="color: #0ecb81; font-weight: bold;">LV 1</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">경험치</span>
+            <span class="info-value" id="aiExperience" style="color: #0ecb81;">EXP 0</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">세그먼트</span>
+            <span class="info-value" id="aiSegment" style="color: #9aa0a6;">0-200</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">모델 타입</span>
+            <span class="info-value" id="aiModelType" style="color: #9aa0a6;">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">학습 데이터</span>
+            <span class="info-value" id="aiTrainingDataCount" style="color: #9aa0a6;">0 개</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">학습 정확도</span>
+            <span class="info-value" id="aiTrainingAccuracy" style="color: #9aa0a6;">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">마지막 학습</span>
+            <span class="info-value" id="aiLastTrainingTime" style="color: #9aa0a6; font-size: 11px;">-</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 카드 예측 시스템 -->
+      <div class="card-prediction-section">
+        <div class="section-title">카드 예측 시스템</div>
+        
+        <!-- 카드 1 (대기 중인 카드 - 다음 예측) -->
+        <div class="card-container">
+          <div class="card waiting" id="card1">
+            <div class="card-header">
+              <div class="card-title">카드 1 (대기 중)</div>
+              <div class="card-status waiting" id="card1Status">대기 중</div>
+              <div class="card-type-badge" id="card1TypeBadge" style="display: none;"></div>
+            </div>
+            <div class="card-content">
+              <div class="card-item">
+                <div class="card-item-label">분봉</div>
+                <div class="card-item-value" id="card1Timeframe">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 가격</div>
+                <div class="card-item-value" id="card1PredictedPrice">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 N/B 데이타</div>
+                <div class="card-item-value" id="card1NBValue">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 N/B Max</div>
+                <div class="card-item-value" id="card1NBMax">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 N/B Min</div>
+                <div class="card-item-value" id="card1NBMin">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 구역</div>
+                <div class="card-item-value" id="card1PredictedZone" style="font-weight: bold;">-</div>
+              </div>
+            </div>
+            <div class="prediction-section" id="card1Prediction">
+              <div class="prediction-confidence" id="card1Confidence">신뢰도: -</div>
+            </div>
+          </div>
+          
+          <!-- 카드 2 (현재 카드) -->
+          <div class="card active" id="card2" data-card-id="card2">
+            <div class="card-header">
+              <div class="card-title">카드 2 (현재)</div>
+              <div class="card-status current" id="card2Status">현재</div>
+              <div class="card-type-badge" id="card2TypeBadge" style="display: none;"></div>
+            </div>
+            <div class="card-content">
+              <div class="card-item">
+                <div class="card-item-label">분봉</div>
+                <div class="card-item-value" id="card2Timeframe">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">현재 가격</div>
+                <div class="card-item-value" id="card2Price">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 가격</div>
+                <div class="card-item-value" id="card2PredictedPrice">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">생산 날짜</div>
+                <div class="card-item-value" id="card2ProductionDate">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">생산 시점 가격</div>
+                <div class="card-item-value" id="card2ProductionPrice">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">생산 시점 분봉</div>
+                <div class="card-item-value" id="card2ProductionTimeframe">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">EMA Fast</div>
+                <div class="card-item-value" id="card2EmaFast">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">EMA Slow</div>
+                <div class="card-item-value" id="card2EmaSlow">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">N/B 데이타</div>
+                <div class="card-item-value" id="card2NBValue">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">N/B Max</div>
+                <div class="card-item-value" id="card2NBMax">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">N/B Min</div>
+                <div class="card-item-value" id="card2NBMin">-</div>
+              </div>
+              <div class="card-item" id="card2PredictedZoneRow" style="display: none;">
+                <div class="card-item-label">예측 구역</div>
+                <div class="card-item-value" id="card2PredictedZone" style="font-weight: bold;">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">실제 구역</div>
+                <div class="card-item-value" id="card2ActualZone" style="font-weight: bold;">-</div>
+              </div>
+            </div>
+            <div class="prediction-section" id="card2Prediction">
+              <div class="prediction-value" id="card2PredictedPriceDisplay">-</div>
+              <div class="prediction-confidence" id="card2Confidence">신뢰도: -</div>
+            </div>
+            <div class="card-chart-section">
+              <div class="chart-label">생산 시점 그래프</div>
+              <div id="card2Chart" style="width: 100%; height: 150px;"></div>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-success card-btn" onclick="handleCardBuy('card2')">매수</button>
+            </div>
+          </div>
+          
+          <!-- 카드 3 (검증 완료 카드) -->
+          <div class="card waiting" id="card3" data-card-id="card3">
+            <div class="card-header">
+              <div class="card-title">카드 3 (검증 완료)</div>
+              <div class="card-status verified" id="card3Status">검증됨</div>
+              <div class="card-type-badge" id="card3TypeBadge" style="display: none;"></div>
+            </div>
+            <div class="card-content">
+              <div class="card-item">
+                <div class="card-item-label">분봉</div>
+                <div class="card-item-value" id="card3Timeframe">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 가격</div>
+                <div class="card-item-value" id="card3PredictedPrice">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">실제 가격</div>
+                <div class="card-item-value" id="card3ActualPrice">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">생산 날짜</div>
+                <div class="card-item-value" id="card3ProductionDate">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">생산 시점 가격</div>
+                <div class="card-item-value" id="card3ProductionPrice">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">생산 시점 분봉</div>
+                <div class="card-item-value" id="card3ProductionTimeframe">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">오차율</div>
+                <div class="card-item-value" id="card3Error">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">가격 변화율</div>
+                <div class="card-item-value" id="card3PriceChange">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">실제 N/B 데이타</div>
+                <div class="card-item-value" id="card3NBValue">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">실제 N/B Max</div>
+                <div class="card-item-value" id="card3NBMax">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">실제 N/B Min</div>
+                <div class="card-item-value" id="card3NBMin">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">예측 구역</div>
+                <div class="card-item-value" id="card3PredictedZone" style="font-weight: bold;">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">실제 구역</div>
+                <div class="card-item-value" id="card3ActualZone" style="font-weight: bold;">-</div>
+              </div>
+              <div class="card-item">
+                <div class="card-item-label">구역 예측 정확도</div>
+                <div class="card-item-value" id="card3ZoneAccuracy" style="font-weight: bold;">-</div>
+              </div>
+            </div>
+            <div class="verification-section" id="card3Verification" style="display: none;">
+              <div class="verification-title">검증 결과</div>
+              <div class="verification-result">
+                <span class="verification-icon" id="card3VerificationIcon">-</span>
+                <span class="verification-text" id="card3VerificationText">-</span>
+              </div>
+              <div class="verification-details" id="card3VerificationDetails">-</div>
+              <div class="accuracy-badge" id="card3AccuracyBadge" style="display: none;">-</div>
+            </div>
+            <div class="card-chart-section">
+              <div class="chart-label">생산 시점 그래프</div>
+              <div id="card3Chart" style="width: 100%; height: 150px;"></div>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-success card-btn" onclick="handleCardBuy('card3')">매수</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="info-card">
+          <div class="info-row">
+            <span class="info-label">예측 정확도</span>
+            <span class="info-value" id="overallAccuracy">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">예측 횟수</span>
+            <span class="info-value" id="predictionCount">0</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">성공 횟수</span>
+            <span class="info-value" id="successCount">0</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 분봉별 카드 히스토리 -->
+      <div class="timeframe-cards-history-section">
+        <div class="section-title">분봉별 카드 히스토리</div>
+        <div id="timeframeCardsHistoryContainer"></div>
+      </div>
+      </div>
+    </div>
+    </div>
+    
+    <!-- 하단 카드 영역 (스크롤 가능) -->
+    <div class="bottom-cards-section" id="bottomCardsSection">
+      <div class="container-fluid g-0">
+        <div class="row g-0">
+          <!-- 좌측: 매수된 카드 -->
+          <div class="col-6 bought-cards-panel">
+            <div class="section-title">매수된 카드</div>
+            <!-- 탭 메뉴 -->
+            <div style="display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+              <button 
+                id="boughtCardsTab" 
+                class="tab-button active" 
+                onclick="switchBoughtCardsTab('bought')"
+                style="flex: 1; padding: 10px 16px; background: rgba(14, 203, 129, 0.2); border: none; border-bottom: 2px solid #0ecb81; color: #0ecb81; font-weight: 600; cursor: pointer; border-radius: 4px 4px 0 0; transition: all 0.2s;"
+                onmouseover="if(!this.classList.contains('active')) { this.style.background = 'rgba(14, 203, 129, 0.1)'; }"
+                onmouseout="if(!this.classList.contains('active')) { this.style.background = 'transparent'; }"
+              >
+                매수된 카드
+              </button>
+              <button 
+                id="completedTradesTab" 
+                class="tab-button" 
+                onclick="switchBoughtCardsTab('completed')"
+                style="flex: 1; padding: 10px 16px; background: transparent; border: none; border-bottom: 2px solid transparent; color: #9aa0a6; font-weight: 600; cursor: pointer; border-radius: 4px 4px 0 0; transition: all 0.2s;"
+                onmouseover="if(!this.classList.contains('active')) { this.style.background = 'rgba(14, 203, 129, 0.1)'; }"
+                onmouseout="if(!this.classList.contains('active')) { this.style.background = 'transparent'; }"
+              >
+                트레이드 완료된 카드
+              </button>
+            </div>
+            <!-- 탭 컨텐츠 -->
+            <div id="boughtCardsContainer" class="cards-container"></div>
+            <div id="completedTradesContainer" class="cards-container" style="display: none;"></div>
+          </div>
+          
+          <!-- 우측: 검증 완료된 카드 -->
+          <div class="col-6 verified-cards-panel">
+            <div class="section-title">검증 완료된 카드</div>
+            <div id="verifiedCardsContainer" class="cards-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./js/chart-analysis.js"></script>
+</body>
+</html>
+
+
