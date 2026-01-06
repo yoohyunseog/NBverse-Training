@@ -1,4 +1,136 @@
-# RL-Trading-Bot
+# NBverse-Training
+
+*[한국어 버전은 아래를 참조하세요](#한국어-korean)*
+
+Reinforcement Learning-Based Cryptocurrency Trading Bot with Card Production System
+
+## 📋 Overview
+
+This project is an automated cryptocurrency trading system utilizing Reinforcement Learning AI. It features a PyQt6-based GUI and optimizes trading strategies through a card production system and NBVerse analysis.
+
+## ✨ Key Features
+
+### 🤖 Reinforcement Learning AI System
+- **3-Layer AI Architecture**: Base Model → Emotion Model → Policy Model
+- **Real-time Decisions**: BUY, SELL, HOLD, FREEZE, DELETE
+- **Reward-Based Learning**: Reward system considering profit/loss ratio, risk, and score improvement
+
+### 📊 Production Card System
+- **Card-Based Trading Strategies**: Each card has an independent trading strategy
+- **N/B Value Analysis**: Chart analysis using NBVerse
+- **Real-time Monitoring**: Price, profit/loss, and score tracking
+
+### 🎯 Verification System
+- **AI Verification List**: Performance tracking of completed SELL cards
+- **Score & Rank System**: Score calculation and rank assignment based on profit/loss ratio
+- **Statistics Dashboard**: Win rate, average profit/loss, rank distribution, etc.
+
+## 🛠️ Tech Stack
+
+- **Python 3.9+**
+- **PyQt6**: GUI Framework
+- **PyUpbit**: Upbit API
+- **NumPy, Pandas**: Data Processing
+- **Scikit-learn**: Machine Learning Models
+- **NBVerse**: N/B Value Calculation and Analysis
+
+## 📦 Installation
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/yoohyunseog/NBverse-Training.git
+cd NBverse-Training
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Set Environment Variables
+Create an `env.local` file and set your Upbit API keys:
+```
+UPBIT_ACCESS_KEY=your_access_key
+UPBIT_SECRET_KEY=your_secret_key
+```
+
+### 4. Run
+```bash
+python main.py
+```
+
+## 📁 Project Structure
+
+```
+v0.0.0.4/
+├── ai/                    # Reinforcement Learning AI Module
+│   ├── base_model.py      # Base Model
+│   ├── emotion_model.py   # Emotion Model
+│   ├── policy_model.py    # Policy Model
+│   ├── reward_calculator.py  # Reward Calculator
+│   └── rl_system.py       # RL System Integration
+├── managers/              # Data Managers
+│   ├── production_card_manager.py  # Production Card Manager
+│   ├── settings_manager.py        # Settings Manager
+│   └── discarded_card_manager.py # Discarded Card Manager
+├── ui/                    # UI Components
+│   ├── production_card.py  # Production Card Widget
+│   ├── verification_card.py # Verification Card Widget
+│   └── gui_builder.py     # GUI Builder
+├── workers/               # Background Workers
+│   ├── card_workers.py    # Card-related Workers
+│   ├── rl_ai_workers.py    # RL AI Workers
+│   └── rl_reward_worker.py # Reward Workers
+├── services/              # Services
+│   └── price_cache_service.py # Price Cache Service
+└── trading_gui_app_v0.12.0_pyqt6.py  # Main Application
+```
+
+## 🎮 Usage
+
+1. **Launch**: Run `python main.py` or `run.bat`
+2. **Settings**: Configure minimum purchase amount, commission rate, etc. in the settings page
+3. **Card Production**: Automatic card production based on MAX/MIN values from the left chart
+4. **AI Decisions**: Real-time BUY/SELL decisions by the RL AI
+5. **Verification**: Check performance of completed SELL cards in the verification tab
+
+## ⚙️ Key Settings
+
+- **Minimum Purchase Amount**: Set minimum trading amount
+- **Commission Rate**: Trading fee ratio
+- **Production Timeframes**: List of timeframes for card production
+- **N/B Decimal Places**: Precision for N/B value display
+
+## 📊 Card Status
+
+- **ACTIVE**: Active card (monitored by AI)
+- **OVERLAP_ACTIVE**: Overlapping active card
+- **REMOVED**: Removed card (moved to verification tab)
+- **GRAY**: Status immediately after SELL completion
+
+## 🔒 Security Notes
+
+- Never commit API keys to public repositories
+- `env.local` file is included in `.gitignore`
+- Sufficient simulation testing is recommended before actual trading
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Please report bugs or suggest features through Issues.
+
+## 📧 Contact
+
+For project-related inquiries, please contact us through Issues.
+
+---
+
+## 한국어 (Korean)
+
+# NBverse-Training
 
 강화학습(Reinforcement Learning) 기반 암호화폐 자동 거래 봇
 
@@ -36,8 +168,8 @@
 
 ### 1. 저장소 클론
 ```bash
-git clone https://github.com/yoohyunseog/RL-Trading-Bot.git
-cd RL-Trading-Bot
+git clone https://github.com/yoohyunseog/NBverse-Training.git
+cd NBverse-Training
 ```
 
 ### 2. 의존성 설치
@@ -55,33 +187,6 @@ UPBIT_SECRET_KEY=your_secret_key
 ### 4. 실행
 ```bash
 python main.py
-```
-
-## 📁 프로젝트 구조
-
-```
-v0.0.0.4/
-├── ai/                    # 강화학습 AI 모듈
-│   ├── base_model.py      # 기준 모델
-│   ├── emotion_model.py   # 감정 모델
-│   ├── policy_model.py    # 정책 모델
-│   ├── reward_calculator.py  # 보상 계산기
-│   └── rl_system.py       # RL 시스템 통합
-├── managers/              # 데이터 관리자
-│   ├── production_card_manager.py  # 생산 카드 관리
-│   ├── settings_manager.py        # 설정 관리
-│   └── discarded_card_manager.py # 폐기 카드 관리
-├── ui/                    # UI 컴포넌트
-│   ├── production_card.py  # 생산 카드 위젯
-│   ├── verification_card.py # 검증 카드 위젯
-│   └── gui_builder.py     # GUI 빌더
-├── workers/               # 백그라운드 워커
-│   ├── card_workers.py    # 카드 관련 워커
-│   ├── rl_ai_workers.py    # RL AI 워커
-│   └── rl_reward_worker.py # 리워드 워커
-├── services/              # 서비스
-│   └── price_cache_service.py # 가격 캐시 서비스
-└── trading_gui_app_v0.12.0_pyqt6.py  # 메인 애플리케이션
 ```
 
 ## 🎮 사용 방법
@@ -114,7 +219,7 @@ v0.0.0.4/
 
 ## 📝 라이선스
 
-이 프로젝트는 개인 사용 목적으로 제작되었습니다.
+이 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
 ## 🤝 기여
 
